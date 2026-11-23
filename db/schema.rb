@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -44,6 +44,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000003) do
     t.index ["topic_id"], name: "index_posts_on_topic_id"
   end
 
+  create_table "retrieval_hits", force: :cascade do |t|
+    t.bigint "retrieval_id", null: false
+    t.bigint "chunk_id", null: false
+    t.integer "rank", null: false
+    t.float "distance", null: false
+    t.index ["chunk_id"], name: "index_retrieval_hits_on_chunk_id"
+    t.index ["retrieval_id"], name: "index_retrieval_hits_on_retrieval_id"
+  end
+
+  create_table "retrievals", force: :cascade do |t|
+    t.text "query", null: false
+    t.string "purpose", default: "adhoc", null: false
+    t.datetime "window_start"
+    t.datetime "window_end"
+    t.integer "k", null: false
+    t.integer "per_topic", null: false
+    t.float "max_distance", null: false
+    t.integer "candidates_count", null: false
+    t.integer "hits_count", null: false
+    t.integer "duration_ms", null: false
+    t.datetime "created_at", null: false
+    t.index ["purpose", "created_at"], name: "index_retrievals_on_purpose_and_created_at"
+  end
+
   create_table "topics", force: :cascade do |t|
     t.bigint "discourse_id", null: false
     t.string "title", null: false
@@ -57,4 +81,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000003) do
 
   add_foreign_key "chunks", "posts"
   add_foreign_key "posts", "topics"
+  add_foreign_key "retrieval_hits", "chunks", on_delete: :cascade
+  add_foreign_key "retrieval_hits", "retrievals", on_delete: :cascade
 end

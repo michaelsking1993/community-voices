@@ -24,7 +24,7 @@ bin/setup
 
 `bin/setup` crawls the last 2 weeks of the forum (about 20 seconds), then chunks and embeds them locally (about a minute; the first run downloads a ~90 MB model). For the full 12 weeks of history: `bin/rails 'ingest:backfill[12]'` (about 2 minutes to crawl and 5 to embed; set `BACKFILL_WEEKS=12` with Docker). After that, `IngestWeekJob` runs every Monday at 6am.
 
-Spot-check the embeddings: `bin/rails 'ingest:nearest[sync problems]'`.
+Spot-check the embeddings: `bin/rails 'ingest:nearest[sync problems]'`. Search the way the report does: `bin/rails 'retrieval:search[sync problems]'`. Score retrieval on the labelled queries: `bin/rails retrieval:eval`.
 
 Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model` to also run the real embedding model).
 
@@ -45,6 +45,7 @@ See [`DECISIONS.md`](DECISIONS.md) for the full log.
 | `topics` | One row per forum thread: title, slug, category ("Anki › FSRS") |
 | `posts` | One row per forum post: author, raw text, date. Keyed on the forum's own id |
 | `chunks` | Up to 150 words of one post, with a topic/category/date header, a content hash, and a 384-number embedding (HNSW index) |
+| `retrievals`, `retrieval_hits` | Every search the app runs: the query, window and settings, and each chunk it returned with its rank and distance |
 
 ## Shape of the system, and why
 

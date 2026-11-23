@@ -4,8 +4,9 @@ class Chunk < ApplicationRecord
 
   scope :pending_embedding, -> { where(embedding: nil) }
 
-  # Nearest chunks to a piece of text, by cosine distance. A console
-  # helper for spot checks; the real retriever arrives in step 5.
+  # Nearest chunks to a piece of text, by cosine distance, with no
+  # filtering. A console helper for spot checks; the app retrieves through
+  # Search::Retriever (window, cut-off, max 2 per thread, logging).
   def self.similar_to(text, limit: 5, model: Embeddings::LocalModel.instance)
     where.not(embedding: nil)
          .nearest_neighbors(:embedding, model.embed([ text ]).first, distance: "cosine")
