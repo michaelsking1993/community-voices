@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -68,6 +68,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000004) do
     t.index ["purpose", "created_at"], name: "index_retrievals_on_purpose_and_created_at"
   end
 
+  create_table "theme_topics", force: :cascade do |t|
+    t.bigint "theme_id", null: false
+    t.bigint "topic_id", null: false
+    t.float "similarity", null: false
+    t.integer "post_count", null: false
+    t.index ["theme_id", "topic_id"], name: "index_theme_topics_on_theme_id_and_topic_id", unique: true
+    t.index ["theme_id"], name: "index_theme_topics_on_theme_id"
+    t.index ["topic_id"], name: "index_theme_topics_on_topic_id"
+  end
+
+  create_table "themes", force: :cascade do |t|
+    t.date "week_start", null: false
+    t.integer "position", null: false
+    t.string "label", null: false
+    t.text "summary", null: false
+    t.string "kind", null: false
+    t.vector "centroid", limit: 384, null: false
+    t.integer "topic_count", null: false
+    t.integer "post_count", null: false
+    t.integer "author_count", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["week_start", "position"], name: "index_themes_on_week_start_and_position", unique: true
+  end
+
   create_table "topics", force: :cascade do |t|
     t.bigint "discourse_id", null: false
     t.string "title", null: false
@@ -83,4 +108,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000004) do
   add_foreign_key "posts", "topics"
   add_foreign_key "retrieval_hits", "chunks", on_delete: :cascade
   add_foreign_key "retrieval_hits", "retrievals", on_delete: :cascade
+  add_foreign_key "theme_topics", "themes", on_delete: :cascade
+  add_foreign_key "theme_topics", "topics"
 end

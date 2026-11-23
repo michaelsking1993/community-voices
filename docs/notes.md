@@ -28,3 +28,10 @@ My notes for the README and the interview, in my own words. Claude adds a short 
 - Max 2 chunks per thread took the top 8 from 3.9 threads to 5.5, with the same hit rate.
 - HNSW gotcha: the date filter is applied after the index walk, so raise `ef_search` or a narrow window comes back short.
 - 15 hand-labelled queries; the eval caught a mistake in my own labels. Measure every change.
+
+## Step 6: themes
+
+- Themes = k-means over *threads* (average of each thread's chunk vectors that week), k = 8, seeded so a week always gives the same answer.
+- SQL counts threads, posts and people. Claude only names each cluster, from titles and excerpts, in one structured-output call.
+- Week of 2026-11-16: the AnkiMobile 26.10 release dominated (two themes), then lost decks and sync. One cluster was a mixed bag: k-means makes every thread join some group.
+- All model calls go through one injected `Llm::Client`, which records tokens and cost for the A/B comparison.
