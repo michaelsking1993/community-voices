@@ -10,9 +10,36 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
 
+  create_table "posts", force: :cascade do |t|
+    t.bigint "topic_id", null: false
+    t.bigint "discourse_id", null: false
+    t.integer "post_number", null: false
+    t.integer "reply_to_post_number"
+    t.string "username", null: false
+    t.text "raw", null: false
+    t.datetime "posted_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["discourse_id"], name: "index_posts_on_discourse_id", unique: true
+    t.index ["posted_at"], name: "index_posts_on_posted_at"
+    t.index ["topic_id"], name: "index_posts_on_topic_id"
+  end
+
+  create_table "topics", force: :cascade do |t|
+    t.bigint "discourse_id", null: false
+    t.string "title", null: false
+    t.string "slug", null: false
+    t.integer "category_id"
+    t.string "category_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["discourse_id"], name: "index_topics_on_discourse_id", unique: true
+  end
+
+  add_foreign_key "posts", "topics"
 end

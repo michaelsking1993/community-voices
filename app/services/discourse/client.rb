@@ -1,0 +1,52 @@
+module Discourse
+  # Thin wrapper over the public Discourse JSON API (no login needed).
+  #
+  #   /posts.json?before=ID  -> the 50 newest posts with id < ID, raw text included
+  #   /categories.json       -> category names, including subcategories
+  class Client
+    BASE_URL = "https://forums.ankiweb.net".freeze
+    USER_AGENT = "CommunityVoices/0.1 (weekly research crawler; 1 req/s)".freeze
+    MAX_RETRIES = 3
+
+    class Error < StandardError; end
+
+    def initialize(base_url: BASE_URL, throttle: Throttle.new, sleeper: ->(s) { sleep(s) })
+      @throttle = throttle
+      @sleeper = sleeper
+      @http = Faraday.new(url: base_url, headers: { "User-Agent" => USER_AGENT, "Accept" => "application/json" }) do |f|
+        f.response :json
+        f.options.timeout = 30
+      end
+    end
+
+    # Newest posts first. Pass `before:` (a post id) to page backwards.
+    def latest_posts(before: nil)
+      params = before ? { before: before } : {}
+      get("/posts.json", params).fetch("latest_posts", [])
+    end
+
+    # { category_id => "Parent › Child" }
+    def category_names
+      body = get("/categories.json", { include_subcategories: true })
+      body.dig("category_list", "categories").each_with_object({}) do |cat, names|
+        names[cat["id"]] = cat["name"]
+        Array(cat["subcategory_list"]).each { |sub| names[sub["id"]] = "#{cat["name"]} › #{sub["name"]}" }
+      end
+    end
+
+    private
+
+    def get(path, params, attempt: 1)
+      @throttle.wait!
+      response = @http.get(path, params)
+      return response.body if response.success?
+
+      if response.status == 429 && attempt <= MAX_RETRIES
+        @sleeper.call(response.headers["Retry-After"].to_i.clamp(1, 60))
+        return get(path, params, attempt: attempt + 1)
+      end
+
+      raise Error, "GET #{path} failed with HTTP #{response.status}"
+    end
+  end
+end

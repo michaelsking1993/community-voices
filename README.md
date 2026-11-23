@@ -22,6 +22,8 @@ docker compose up -d db
 bin/setup
 ```
 
+`bin/setup` crawls the last 2 weeks of the forum (about 20 seconds). For the full 12 weeks of history: `bin/rails 'ingest:backfill[12]'` (about 2 minutes; set `BACKFILL_WEEKS=12` with Docker). After that, `IngestWeekJob` runs every Monday at 6am.
+
 Run the tests with `bundle exec rspec`.
 
 ## The problem, restated
@@ -38,7 +40,8 @@ See [`DECISIONS.md`](DECISIONS.md) for the full log.
 
 | Table | What it holds |
 |---|---|
-| _(added per step)_ | |
+| `topics` | One row per forum thread: title, slug, category ("Anki › FSRS") |
+| `posts` | One row per forum post: author, raw text, date. Keyed on the forum's own id |
 
 ## Shape of the system, and why
 
