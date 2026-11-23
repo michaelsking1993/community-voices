@@ -61,3 +61,7 @@ My notes for the README and the interview, in my own words. The AI assistant add
 - Paste-all was slightly better on quality; RAG gets most of it at a third of the cost, and keeps working when the data stops fitting in the prompt. Honest framing: RAG wins on cost and scale, not on quality for a one-week corpus.
 - No context: nothing to cite, judge gave 1/5 on coverage.
 
+## Step 11: charts
+
+- Plotly basic bundle vendored, one Stimulus controller; server describes figures. PCA map of 650 threads; retrieval stats from the retrieval log.
+

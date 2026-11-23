@@ -14,6 +14,7 @@ Read in this order. Each page is about one screen.
 8. [Predict next week](steps/08-predictions.md): trend counts, earlier look-alikes, betas and releases, checkable claims
 9. [Backtest](steps/09-backtest.md): score past predictions against the week that followed, with no peeking
 10. [A/B test](steps/10-ab-test.md): no context vs paste the whole week vs RAG, judged three ways
+11. [Charts](steps/11-charts.md): Plotly through Stimulus, embedding map, retrieval stats
 
 ## Concepts
 

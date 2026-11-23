@@ -11,7 +11,7 @@
 
 :root { --ink: #1d1d1f; --muted: #6e6e73; --line: #d2d2d7; --accent: #2f5fd0; --bg: #fff; }
 @media (prefers-color-scheme: dark) { :root { --ink: #f2f2f7; --muted: #a1a1a6; --line: #3a3a3c; --accent: #7aa2ff; --bg: #161618; } }
-body { font: 16px/1.55 system-ui, sans-serif; color: var(--ink); background: var(--bg); max-width: 760px; margin: 2rem auto; padding: 0 16px; }
+body { font: 16px/1.55 system-ui, sans-serif; color: var(--ink); background: var(--bg); max-width: 960px; margin: 2rem auto; padding: 0 16px; }
 a { color: var(--accent); }
 .muted { color: var(--muted); font-size: 0.9em; }
 .headline { font-size: 1.2em; font-style: italic; }
@@ -20,3 +20,6 @@ a { color: var(--accent); }
 blockquote { border-left: 3px solid var(--line); margin: 0.75rem 0; padding: 0.25rem 1rem; }
 table { border-collapse: collapse; width: 100%; }
 th, td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+figure { margin: 1.5rem 0; }
+.plot { width: 100%; min-height: 360px; }
+nav { margin-bottom: 1rem; }
