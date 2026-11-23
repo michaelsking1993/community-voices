@@ -47,6 +47,7 @@ See [`DECISIONS.md`](DECISIONS.md) for the full log.
 | `chunks` | Up to 150 words of one post, with a topic/category/date header, a content hash, and a 384-number embedding (HNSW index) |
 | `themes`, `theme_topics` | A week's themes: a label, summary and kind written by the LLM, counts from SQL, and the threads in each |
 | `reports` | A generated report: the model's structured answer, the numbered evidence it cited, the citation and quote checks, tokens and cost. Outputs only, never searched |
+| `judgements` | What a judge concluded about a report: prediction scores (backtest), support checks and blind rankings (A/B) |
 | `retrievals`, `retrieval_hits` | Every search the app runs: the query, window and settings, and each chunk it returned with its rank and distance |
 
 ## Shape of the system, and why
