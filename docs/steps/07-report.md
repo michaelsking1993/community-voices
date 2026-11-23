@@ -2,14 +2,14 @@
 
 ## What we built
 
-`Reports::Builder` writes a week's Community Voices report. For each of the 6 biggest themes it retrieves 6 chunks from that week and 3 look-alikes from the 12 weeks before, numbers them `[E1]`, `[E2]`..., and asks Claude for a structured report: a headline, an overview, and a section per theme with cited claims and word-for-word quotes. `Reports::Grounding` then checks every citation and quote in code. Reports are saved with their evidence, checks, tokens and cost, and shown at `/reports` (with a Markdown download).
+`Reports::Builder` writes a week's Community Voices report. For each of the 6 biggest themes it retrieves 6 chunks from that week and 3 look-alikes from the 12 weeks before, numbers them `[E1]`, `[E2]`..., and asks the LLM for a structured report: a headline, an overview, and a section per theme with cited claims and word-for-word quotes. `Reports::Grounding` then checks every citation and quote in code. Reports are saved with their evidence, checks, tokens and cost, and shown at `/reports` (with a Markdown download).
 
 ## Why this way
 
 - **Retrieve per theme, not once for the week.** Each theme gets its own query (its label and summary), so every section has evidence about *that* theme, and a quiet theme is not drowned out by a loud one. (DECISIONS #28)
 - **History as labelled context.** Three older look-alikes per theme let the report say "this came back" or "this is new", and they feed predictions in step 8. They are marked as context so the model does not mix weeks up.
 - **Cite or don't say it, checked by code.** Numbered evidence, a citation after every claim, exact quotes, and SQL numbers only. Code counts valid citations, verbatim quotes and uncited sentences. (DECISIONS #29, [grounded prompting](../concepts/grounded-prompting.md))
-- **No evidence, no model call.** If no theme has a chunk under the distance cut-off, the report says "Not enough evidence" and the model is never asked to write. Themes with nothing to cite are listed, not written about. (DECISIONS #30)
+- **No evidence, no LLM call.** If no theme has a chunk under the distance cut-off, the report says "Not enough evidence" and the LLM is never asked to write. Themes with nothing to cite are listed, not written about. (DECISIONS #30)
 - **Reports are outputs, never sources.** They are stored in `reports`, never chunked or embedded, so the model never retrieves its own earlier claims. (DECISIONS #31)
 - **Evidence is pluggable.** The builder takes an `evidence_source`. RAG is one; the A/B step adds "no context" and "paste everything" with the same prompt and checks, so only the context differs. (DECISIONS #32)
 
@@ -23,7 +23,7 @@ Reports::Builder.call(week)
                 12 weeks before: k 3, max 1 per thread  purpose "report_history"
   nothing?    "Not enough evidence", no model call
   prompt      week, exact counts (SQL, vs the 4 weeks before), per theme: counts, [E1].. evidence
-  Llm::Client#json(schema: headline, overview, sections[theme, title, body, quotes])
+  Llm.client.json(schema: headline, overview, sections[theme, title, body, quotes])
   Grounding   citations valid? quotes verbatim? sentences uncited?
   save        Report: content, evidence, grounding, markdown, model, tokens, cost
 ```
@@ -32,7 +32,7 @@ Try it: `bin/rails report:build` (last complete week) or `bin/rails 'report:buil
 
 ## Check
 
-A dry run on the week of 2026-11-16, with a stand-in model, showed every one of the 6 themes found 6 chunks from the week and 3 from earlier weeks, and the whole prompt is about 7,000 tokens (about $0.03 per report at Opus 5.5 prices). That is roughly a seventh of the week's ~50,000 tokens of posts. The live run with Claude is below.
+A dry run on the week of 2026-11-16, with a stand-in model, showed every one of the 6 themes found 6 chunks from the week and 3 from earlier weeks, and the whole prompt is about 7,000 tokens (about $0.03 per report with the default Anthropic model). That is roughly a seventh of the week's ~50,000 tokens of posts. The live run with the LLM is below.
 
 _Live run: to do once the API key is set._
 

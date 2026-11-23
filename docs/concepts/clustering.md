@@ -15,7 +15,7 @@ For unit vectors we compare by dot product (cosine similarity) and re-normalise 
 
 | Weakness | What it means here | What we do |
 |---|---|---|
-| You must choose k | 8 themes a week is a guess | Fixed at 8: about 8 threads each. The report skips tiny themes |
+| You must choose k | Text has no natural k (silhouette 0.05-0.12 for every k we tried) | About one theme per 12 threads, between 4 and 8; the report skips one-thread themes |
 | Every point must join a group | A one-off thread lands in the "closest" theme, making it a bit mixed | The model is told to say when a cluster is mixed (kind "other") |
 | Assumes round, similar-sized groups | One busy topic can split, two quiet ones can merge | Good enough to see the week; the counts are exact either way |
 
@@ -31,4 +31,4 @@ A 100-reply thread about one bug would become its own "theme" if we clustered po
 |---|---|---|
 | Grouping | k-means on embeddings | Finds structure nobody named |
 | Counting threads, posts, people | SQL | Exact; models are bad at counting |
-| Naming and summarising | Claude, from 12 titles and 5 excerpts per cluster | Turns a group of vectors into words a person can read |
+| Naming and summarising | The LLM, from 12 titles and 5 excerpts per cluster | Turns a group of vectors into words a person can read |

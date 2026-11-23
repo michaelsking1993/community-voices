@@ -1,4 +1,4 @@
-# Stands in for Llm::Client in specs: no network, no key, no cost.
+# Stands in for any Llm adapter in specs: no network, no key, no cost.
 # Give it the JSON to return (or a block that builds it from the prompt),
 # then inspect #calls to see exactly what the app sent.
 class FakeLlm

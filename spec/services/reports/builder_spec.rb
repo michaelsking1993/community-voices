@@ -81,10 +81,10 @@ RSpec.describe Reports::Builder do
     add_thread(2, "#{sync_text} again today")
     Embeddings::Embedder.new(model:).call
     Themes::Finder.new(llm:, k: 1).call(week)
-    failing = FakeLlm.new { raise Llm::Client::Failed, "cut off" }
+    failing = FakeLlm.new { raise Llm::Failed, "cut off" }
 
     expect { described_class.new(llm: failing, evidence_source: Reports::RagEvidence.new(retriever:)).call(week) }
-      .to raise_error(Llm::Client::Failed)
-    expect(Report.last).to have_attributes(status: "failed", error: "Llm::Client::Failed: cut off")
+      .to raise_error(Llm::Failed)
+    expect(Report.last).to have_attributes(status: "failed", error: "Llm::Failed: cut off")
   end
 end

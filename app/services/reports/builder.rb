@@ -4,12 +4,12 @@ module Reports
   # 1. Themes     the week's themes (found now if not stored yet)
   # 2. Evidence   numbered chunks per theme, from an evidence source
   #               (RagEvidence here; the A/B step swaps in other arms)
-  # 3. Write      one structured-output call: headline, overview, a section
+  # 3. Write      one structured-output LLM call: headline, overview, a section
   #               per theme with cited claims and word-for-word quotes
   # 4. Check      Grounding verifies every citation and quote in code
   # 5. Save       a Report with content, evidence, checks, tokens and cost
   #
-  # With no evidence at all, it makes no model call and says so.
+  # With no evidence at all, it makes no LLM call and says so.
   class Builder
     THEMES = 6      # themes covered, biggest first
     MIN_THREADS = 2 # a "theme" of one thread is not a theme
@@ -38,7 +38,7 @@ module Reports
                properties: { headline: { type: "string" }, overview: { type: "string" },
                              sections: { type: "array", items: SECTION } } }.freeze
 
-    def initialize(llm: Llm::Client.new, evidence_source: RagEvidence.new, theme_finder: nil, arm: "rag")
+    def initialize(llm: Llm.client, evidence_source: RagEvidence.new, theme_finder: nil, arm: "rag")
       @llm = llm
       @evidence_source = evidence_source
       @theme_finder = theme_finder || Themes::Finder.new(llm:)
