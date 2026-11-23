@@ -20,3 +20,11 @@ My notes for the README and the interview, in my own words. Claude adds a short 
 - Generation never creates chunks. Chunks only come from ingestion; the model reads them.
 - A content hash means only new or edited text is ever embedded.
 - Open problem for step 5: one long thread can fill the whole top 5.
+
+## Step 5: retrieval
+
+- Retrieval = nearest *and* close enough *and* not all one thread *and* in the right week.
+- The distance cut-off (0.6) is what makes "not enough evidence" possible. Off-topic questions never got closer than 0.71.
+- Max 2 chunks per thread took the top 8 from 3.9 threads to 5.5, with the same hit rate.
+- HNSW gotcha: the date filter is applied after the index walk, so raise `ef_search` or a narrow window comes back short.
+- 15 hand-labelled queries; the eval caught a mistake in my own labels. Measure every change.

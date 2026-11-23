@@ -8,6 +8,7 @@ Read in this order. Each page is about one screen.
 2. [Concepts lab](steps/02-concepts-lab.md): guess which sentences are similar, then measure
 3. [Ingest the forum](steps/03-ingest.md): polite, idempotent weekly crawl
 4. [Chunk and embed](steps/04-chunk-and-embed.md): headers, tiny-post skip, content hash, local model, HNSW
+5. [Retrieval](steps/05-retrieval.md): date window, distance cut-off, max 2 per thread, logging, a 15-query eval
 
 ## Concepts
 
@@ -16,6 +17,7 @@ Read in this order. Each page is about one screen.
 - [pgvector](concepts/pgvector.md): vectors inside Postgres
 - [Embeddings and chunking](concepts/embeddings-and-chunking.md)
 - [ETL and ingestion](concepts/etl-and-ingestion.md)
+- [Retrieval](concepts/retrieval.md): top-k, cut-offs, filtered HNSW, diversity, hybrid search, measuring it
 
 ## Also
 

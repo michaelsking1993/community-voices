@@ -25,5 +25,5 @@ Our A/B test runs all three side by side. That is the honest way to show RAG ear
 ## Where it shows up in this repo
 
 - Library: `posts` → `chunks` with embeddings (steps 3-4).
-- Retrieval: `Chunk.similar_to` today; a proper `Retriever` with date filters, diversity and logging in step 5.
+- Retrieval: `Search::Retriever` (date window, cut-off, max 2 per thread, logging); see [retrieval.md](retrieval.md).
 - Generation: the report builder in steps 7-8.

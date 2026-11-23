@@ -4,12 +4,25 @@ class Chunk < ApplicationRecord
 
   scope :pending_embedding, -> { where(embedding: nil) }
 
-  # Nearest chunks to a piece of text, by cosine distance. A console
-  # helper for spot checks; the real retriever arrives in step 5.
+  # HNSW keeps only `hnsw.ef_search` candidates (default 40) and applies
+  # WHERE clauses and row visibility after that. A date filter, or many
+  # deleted rows still in the index, can then leave fewer results than
+  # asked for. This raises the limit for one transaction (`true` = local).
+  def self.with_ef_search(value = 200)
+    transaction do
+      connection.select_value(sanitize_sql_array([ "SELECT set_config('hnsw.ef_search', ?, true)", Integer(value).to_s ]))
+      yield
+    end
+  end
+
+  # Nearest chunks to a piece of text, by cosine distance, with no
+  # filtering. A console helper for spot checks; the app retrieves through
+  # Search::Retriever (window, cut-off, max 2 per thread, logging).
   def self.similar_to(text, limit: 5, model: Embeddings::LocalModel.instance)
-    where.not(embedding: nil)
-         .nearest_neighbors(:embedding, model.embed([ text ]).first, distance: "cosine")
-         .includes(post: :topic)
-         .first(limit)
+    vector = model.embed([ text ]).first
+    with_ef_search do
+      where.not(embedding: nil).nearest_neighbors(:embedding, vector, distance: "cosine")
+                               .includes(post: :topic).first(limit)
+    end
   end
 end

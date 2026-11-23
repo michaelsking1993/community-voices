@@ -1,0 +1,50 @@
+# Hand-labelled retrieval test set, made on 2026-11-23 from 12 weeks of
+# forum history (2026-09-01 to 2026-11-23).
+#
+# Each query is worded differently from the thread titles on purpose, so
+# it tests meaning, not shared keywords. `relevant` lists the forum topic
+# ids (forums.ankiweb.net/t/<id>) a good answer should come from. Labels
+# were judged from titles and a skim of each thread, so treat them as a
+# reasonable answer key, not a perfect one. Threads you have not crawled
+# are skipped: run bin/rails 'ingest:backfill[12]' for the full set.
+#
+# `off_topic` queries have nothing to do with Anki. The retriever should
+# return nothing for them, which is what lets a report say "not enough
+# evidence" instead of padding itself with unrelated posts.
+queries:
+  - query: "I overwrote my AnkiWeb collection by mistake and need a server backup restored"
+    relevant: [70976, 71463, 71426, 71131, 71398, 71018, 70958]
+  - query: "program will not launch after installing the new version"
+    relevant: [71029, 71074, 71105, 71064, 71038, 71476, 71230]
+  - query: "sound stopped playing after I upgraded"
+    relevant: [71102, 71118, 71113, 70456, 74628]
+  - query: "pictures and media files disappeared from my cards"
+    relevant: [71084, 71345, 71208, 71103, 71368, 71511, 71558, 71600]
+  - query: "how do I go back to the previous version of the iPhone app"
+    relevant: [74279, 74679, 74210]
+  - query: "everything is slow and laggy since the latest release"
+    relevant: [71033]
+  - query: "text in non-Latin and right-to-left scripts shows up wrong"
+    relevant: [70860, 71622, 70918, 71485]
+  - query: "volunteering to translate the interface into my language"
+    relevant: [70934, 74466, 74394, 71461]
+  - query: "LaTeX equations are not rendered properly"
+    relevant: [71048, 71637]
+  - query: "gamepad or external keyboard keys do nothing on the iPad"
+    relevant: [74253, 74494]
+  - query: "no reviews showing up even though cards should be due"
+    relevant: [71612, 74628, 74633, 71418]
+  - query: "use a machine learning model to schedule reviews"
+    relevant: [60830, 70986]
+  - query: "syncing fails with a connection error"
+    relevant: [71098, 70975, 71440, 74299]
+  - query: "add-on that helps organise decks or find duplicate notes"
+    relevant: [71641, 71243, 71154, 74537]
+  - query: "the Android app freezes or keeps crashing"
+    relevant: [71337, 71160]
+
+off_topic:
+  - "what is the best recipe for chocolate cake"
+  - "stock market predictions for 2027"
+  - "who won the football match yesterday"
+  - "how to fix a flat bicycle tyre"
