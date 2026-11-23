@@ -9,7 +9,7 @@ Read in this order. Each page is about one screen.
 3. [Ingest the forum](steps/03-ingest.md): polite, idempotent weekly crawl
 4. [Chunk and embed](steps/04-chunk-and-embed.md): headers, tiny-post skip, content hash, local model, HNSW
 5. [Retrieval](steps/05-retrieval.md): date window, distance cut-off, max 2 per thread, logging, a 15-query eval
-6. [Themes](steps/06-themes.md): k-means over threads, SQL counts, Claude names each cluster
+6. [Themes](steps/06-themes.md): k-means over threads, choosing k, SQL counts, the LLM names each cluster
 
 ## Concepts
 

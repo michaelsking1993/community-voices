@@ -1,20 +1,16 @@
 module Llm
-  # The one place the app talks to Claude. It is injected wherever a model
-  # writes something, so specs pass FakeLlm and no test calls the API, and
-  # the provider could be swapped without touching the callers.
+  # The Anthropic adapter for the Llm interface. Uses the official
+  # `anthropic` gem and structured outputs, so the answer always matches
+  # the JSON schema the caller passes.
   #
-  # Every call asks for JSON that matches a schema (structured outputs), so
-  # callers get a Hash back instead of parsing prose.
-  class Client
-    class NotConfigured < StandardError; end
-    class Failed < StandardError; end
-
+  # Configured by ANTHROPIC_API_KEY and ANTHROPIC_MODEL.
+  class Anthropic
     DEFAULT_MODEL = "claude-opus-5-5".freeze
     MAX_TOKENS = 16_000
 
     def initialize(api_key: ENV["ANTHROPIC_API_KEY"], model: ENV.fetch("ANTHROPIC_MODEL", DEFAULT_MODEL), effort: :medium)
       @api_key = api_key
-      @model = model
+      @model = model.presence || DEFAULT_MODEL
       @effort = effort
     end
 
@@ -22,7 +18,6 @@ module Llm
 
     def configured? = @api_key.present?
 
-    # Returns an Llm::Response whose #data is the parsed JSON.
     def json(system:, prompt:, schema:, max_tokens: MAX_TOKENS)
       raise NotConfigured, "Set ANTHROPIC_API_KEY in .env to generate reports." unless configured?
 
@@ -61,6 +56,6 @@ module Llm
       end
     end
 
-    def sdk = @sdk ||= Anthropic::Client.new(api_key: @api_key)
+    def sdk = @sdk ||= ::Anthropic::Client.new(api_key: @api_key)
   end
 end

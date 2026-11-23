@@ -63,6 +63,12 @@ RSpec.describe Themes::Finder do
     expect(labels).to all(be_in([ "Sync error", "Sync fails again", "Font too small" ]))
   end
 
+  it "picks about one theme per 12 threads, between 4 and 8, when k is not given" do
+    finder = described_class.new(llm:)
+
+    expect([ 20, 56, 93, 99, 200 ].map { finder.send(:k_for, _1) }).to eq([ 4, 5, 8, 8, 8 ])
+  end
+
   it "returns no themes for an empty week" do
     expect(described_class.new(llm:).call(week.next)).to eq([])
     expect(llm.calls).to be_empty
