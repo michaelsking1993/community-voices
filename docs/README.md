@@ -11,6 +11,7 @@ Read in this order. Each page is about one screen.
 5. [Retrieval](steps/05-retrieval.md): date window, distance cut-off, max 2 per thread, logging, a 15-query eval
 6. [Themes](steps/06-themes.md): k-means over threads, choosing k, SQL counts, the LLM names each cluster
 7. [Write the report](steps/07-report.md): per-theme retrieval, numbered evidence, cite-or-omit, checks in code
+8. [Predict next week](steps/08-predictions.md): trend counts, earlier look-alikes, betas and releases, checkable claims
 
 ## Concepts
 

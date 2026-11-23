@@ -23,7 +23,9 @@ services:
     environment:
       DB_HOST: db
       BACKFILL_WEEKS: ${BACKFILL_WEEKS:-2}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-anthropic}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
       BINDING: 0.0.0.0
     ports:
       - "3000:3000"

@@ -43,3 +43,9 @@ My notes for the README and the interview, in my own words. The AI assistant add
 - Rules: cite after every claim, quote word for word, use only the SQL numbers. Code then counts valid citations, verbatim quotes, uncited sentences.
 - No evidence means no model call and a "Not enough evidence" report. Reports are never chunked, so the model never reads its own output.
 - The builder takes an evidence source, so the A/B arms share everything except the context.
+
+## Step 8: predictions
+
+- Three signals: weekly post counts near each theme's centre (6 weeks), look-alike posts from earlier weeks, and betas/releases from the last 14 days.
+- The AnkiMobile 26.10 release shows as 4 → 38 → 25 posts a week: a spike that is decaying.
+- Predictions must be checkable, cite their reasons, and state a confidence. Only data from before the week's end is used, so the backtest can't cheat.

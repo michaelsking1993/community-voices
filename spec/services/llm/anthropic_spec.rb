@@ -35,6 +35,6 @@ RSpec.describe Llm::Anthropic do
 
   it "explains how to fix a missing key" do
     expect { described_class.new(api_key: nil).json(system: "s", prompt: "p", schema:) }
-      .to raise_error(Llm::NotConfigured, /ANTHROPIC_API_KEY/)
+      .to raise_error(Llm::NotConfigured, /LLM_API_KEY/)
   end
 end

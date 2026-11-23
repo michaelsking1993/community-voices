@@ -24,7 +24,7 @@ Themes::Finder.call(week)
   INSERT themes + theme_topics                    re-running a week replaces it
 ```
 
-`Llm.client` returns the adapter for `LLM_PROVIDER` (default `anthropic`). The Anthropic adapter (`Llm::Anthropic`) uses the official `anthropic` gem, the model from `ANTHROPIC_MODEL`, structured outputs, and server-side fallbacks (if a safety check declines, the API retries on another model instead of failing). Any adapter raises `Llm::NotConfigured` when the key is missing and `Llm::Failed` when the answer was cut off or declined. Adding a provider means one new adapter class and one line in `Llm::PROVIDERS`.
+`Llm.client` returns the adapter for `LLM_PROVIDER` (default `anthropic`). The Anthropic adapter (`Llm::Anthropic`) uses the official `anthropic` gem, the key and model from `LLM_API_KEY` and `LLM_MODEL` (the same names for every adapter), structured outputs, and server-side fallbacks (if a safety check declines, the API retries on another model instead of failing). Any adapter raises `Llm::NotConfigured` when the key is missing and `Llm::Failed` when the answer was cut off or declined. Adding a provider means one new adapter class and one line in `Llm::PROVIDERS`.
 
 Try it: `bin/rails themes:find` (last complete week) or `bin/rails 'themes:find[2026-11-16]'`.
 

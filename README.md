@@ -24,7 +24,7 @@ bin/setup
 
 `bin/setup` crawls the last 2 weeks of the forum (about 20 seconds), then chunks and embeds them locally (about a minute; the first run downloads a ~90 MB model). For the full 12 weeks of history: `bin/rails 'ingest:backfill[12]'` (about 2 minutes to crawl and 5 to embed; set `BACKFILL_WEEKS=12` with Docker). After that, `IngestWeekJob` runs every Monday at 6am.
 
-Spot-check the embeddings: `bin/rails 'ingest:nearest[sync problems]'`. Search the way the report does: `bin/rails 'retrieval:search[sync problems]'`. Score retrieval on the labelled queries: `bin/rails retrieval:eval`. Write last week's report: `bin/rails report:build` (needs `ANTHROPIC_API_KEY`), or open http://localhost:3000 and press "Write report".
+Spot-check the embeddings: `bin/rails 'ingest:nearest[sync problems]'`. Search the way the report does: `bin/rails 'retrieval:search[sync problems]'`. Score retrieval on the labelled queries: `bin/rails retrieval:eval`. Write last week's report: `bin/rails report:build` (needs `LLM_API_KEY`), or open http://localhost:3000 and press "Write report".
 
 Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model` to also run the real embedding model).
 
