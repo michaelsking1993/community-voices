@@ -1,0 +1,16 @@
+/.bundle
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/tmp/pids/*
+!/tmp/pids/.keep
+/tmp/storage/*
+/storage/*
+/public/assets
+/config/master.key
+/config/credentials/*.key
+.env
+# Raw forum data never goes in the repo (see DECISIONS.md)
+/data/
+/coverage/
