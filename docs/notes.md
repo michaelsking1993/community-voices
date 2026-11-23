@@ -55,3 +55,9 @@ My notes for the README and the interview, in my own words. The AI assistant add
 - Reports use only pre-week data (tested with a planted future post); only the scorer looks forward.
 - 4 weeks, 13 scored predictions: hit rate 0.42. High confidence (0.25) did not beat low (0.50): small sample, but the confidence is not trustworthy yet.
 
+## Step 10: A/B test
+
+- RAG $0.15 and 15k tokens a report; paste-all $0.46 and 88k; no context $0.03.
+- Paste-all was slightly better on quality; RAG gets most of it at a third of the cost, and keeps working when the data stops fitting in the prompt. Honest framing: RAG wins on cost and scale, not on quality for a one-week corpus.
+- No context: nothing to cite, judge gave 1/5 on coverage.
+

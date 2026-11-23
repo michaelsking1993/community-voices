@@ -13,6 +13,7 @@ Read in this order. Each page is about one screen.
 7. [Write the report](steps/07-report.md): per-theme retrieval, numbered evidence, cite-or-omit, checks in code
 8. [Predict next week](steps/08-predictions.md): trend counts, earlier look-alikes, betas and releases, checkable claims
 9. [Backtest](steps/09-backtest.md): score past predictions against the week that followed, with no peeking
+10. [A/B test](steps/10-ab-test.md): no context vs paste the whole week vs RAG, judged three ways
 
 ## Concepts
 
