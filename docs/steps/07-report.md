@@ -34,7 +34,26 @@ Try it: `bin/rails report:build` (last complete week) or `bin/rails 'report:buil
 
 A dry run on the week of 2026-11-16, with a stand-in model, showed every one of the 6 themes found 6 chunks from the week and 3 from earlier weeks, and the prompt was about 7,000 tokens (about 8,100 with step 8's signals; about $0.04 per report with the default Anthropic model). That is roughly a sixth of the week's ~50,000 tokens of posts. The live run with the LLM is below.
 
-_Live run: to do once the API key is set._
+### Live run
+
+Week of 2026-11-16, against 6 weeks of real forum data, written by the LLM in one call (`bin/rails 'report:build[2026-11-16]'`):
+
+| Measure | Result |
+|---|---|
+| Prompt and answer | 14,446 tokens in, 3,570 out |
+| Cost and time | about $0.13, 34 seconds |
+| Citations that point to a real evidence item | 59 of 59 |
+| Quotes found word for word in their source post | 9 of 9 |
+| Sentences with no citation | 7 of 29 |
+
+The headline: *Forum activity rose well above the recent average, driven by AnkiMobile 26.10/26.10.1 regressions, desktop crash reports and the usual stream of AnkiWeb restore requests.* The opening numbers (309 posts, 103 threads, 113 people, against a 4-week average of 225 posts) come from SQL, not from the model.
+
+What the checks say:
+
+- **Grounding held.** No citation and no quote was invented. This is the part code can verify, and it passed.
+- **The 7 uncited sentences are mostly framing**, such as "This is a small cluster" or "The evidence is too thin to show a shared cause". They are honest hedges, but the check cannot tell a hedge from an unsupported claim, which is why the judge prompt in step 9 is still worth building.
+- **The report notices when a theme is a mixed bag.** Theme 1 ("27 threads of crashes") says the count "overstates the crash volume" because add-on and translation threads landed in the same cluster, and theme 6 says the evidence is "too thin to show any shared cause". That is the "not enough evidence" path working, and it also shows the k-means weakness described in step 6.
+- **Cost is small.** About 13 cents for the whole report, so running all three A/B arms on many weeks is cheap.
 
 ## What I learned
 

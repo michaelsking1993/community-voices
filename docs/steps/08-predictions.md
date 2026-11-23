@@ -46,7 +46,19 @@ The AnkiMobile 26.10 release (2026-11-09) shows as a jump from about 4 posts a w
 
 **Choosing 0.35.** At 0.45 every theme counted 25 to 140 posts a week, because all chunks share the "Topic / Category / Date" header and sit fairly close to every centre. At 0.35 the counts are small and the 26.10 spike stands out clearly. The numbers are a rough signal for the LLM, not exact topic counts, and the prompt says so.
 
-_Live predictions: to do once the API key is set; the backtest in step 9 scores them._
+### Live predictions
+
+The same live call as step 7 (week of 2026-11-16) wrote five predictions for the week of 2026-11-23. Their citations were included in the 59 of 59 valid. The backtest in step 9 will score them against what actually happened.
+
+| Prediction | Basis | Confidence |
+|---|---|---|
+| AnkiMobile 26.10.x regression threads continue, including 26.10.2 reports, with fewer posts than this week | event | medium |
+| Requests to restore decks deleted after AnkiWeb inactivity continue at a similar level | recurring | high |
+| The Anki 26.11 beta thread gets more bug reports, including the filtered-deck "ambiguous column name: data" error | event | medium |
+| Hardware keyboard and remote input problems in AnkiMobile reviews continue | trend | medium |
+| Desktop crash reports, including the macOS accessibility crash, stay at about this week's level | trend | low |
+
+Things worth noting: the model gave "high" only to the prediction with the longest history (the restore requests were steady at 27, 33, 28, 8, 38 and 33 posts a week) and "low" to the one whose theme is a mixed cluster. It expected the AnkiMobile spike to decay, which is the pattern the trend counts showed. Each claim is concrete enough to check against the next week's forum.
 
 ## What I learned
 

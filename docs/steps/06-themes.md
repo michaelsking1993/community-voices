@@ -45,6 +45,23 @@ Week of 2026-11-16: 309 posts in 103 threads, 99 of them with enough text to emb
 
 That matches a skim of the forum that week: the AnkiMobile 26.10 release dominates (themes 1 and 7), followed by lost data and sync. Theme 4 shows k-means' weakness: every thread must join some group, so a few one-off threads make it mixed.
 
+### The live labels
+
+The same week, with the LLM naming each group (6 weeks of real data loaded; counts come from SQL, labels and kinds from the model). Thread and post counts differ a little from the table above because that one was measured on 12 weeks of data and this one on 6.
+
+| # | Label | Kind | Threads | Posts | People |
+|---|---|---|---|---|---|
+| 1 | Desktop crashes and misc help | problem | 27 | 91 | 41 |
+| 2 | AnkiMobile 26.10 update regressions | problem | 21 | 76 | 37 |
+| 3 | Lost decks and restore requests | problem | 18 | 57 | 23 |
+| 4 | Card counts, stats and browser columns | request | 15 | 38 | 14 |
+| 5 | Keyboard, editor and screen layout issues | problem | 7 | 16 | 12 |
+| 6 | Mixed sync and review questions | other | 4 | 10 | 5 |
+| 7 | Editor cloze formatting bugs | problem | 3 | 9 | 5 |
+| 8 | AnkiMobile toolbar design complaints | problem | 4 | 8 | 7 |
+
+The labels are good where the cluster is tight (2, 3, 4, 7, 8). Where the cluster is a grab-bag the model says so in its own label: "Desktop crashes and misc help" and "Mixed sync and review questions" (kind: other) are honest names for mixed groups, which is the k-means weakness described above showing up in the output instead of being hidden by a confident name.
+
 ## Choosing k
 
 I first picked 8 by judgment (about 100 threads a week, about 12 each), then measured k = 4 to 12 on three real weeks:
