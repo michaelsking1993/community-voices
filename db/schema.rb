@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_000006) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_000007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -27,6 +27,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000006) do
     t.index ["embedding"], name: "index_chunks_on_embedding", opclass: :vector_cosine_ops, using: :hnsw
     t.index ["post_id", "position"], name: "index_chunks_on_post_id_and_position", unique: true
     t.index ["post_id"], name: "index_chunks_on_post_id"
+  end
+
+  create_table "judgements", force: :cascade do |t|
+    t.string "kind", null: false
+    t.date "week_start", null: false
+    t.bigint "report_id"
+    t.jsonb "data", default: {}, null: false
+    t.string "model"
+    t.integer "input_tokens"
+    t.integer "output_tokens"
+    t.decimal "cost_usd", precision: 10, scale: 4
+    t.integer "duration_ms"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind", "week_start"], name: "index_judgements_on_kind_and_week_start"
+    t.index ["report_id"], name: "index_judgements_on_report_id"
   end
 
   create_table "posts", force: :cascade do |t|
@@ -126,6 +142,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000006) do
   end
 
   add_foreign_key "chunks", "posts"
+  add_foreign_key "judgements", "reports", on_delete: :cascade
   add_foreign_key "posts", "topics"
   add_foreign_key "retrieval_hits", "chunks", on_delete: :cascade
   add_foreign_key "retrieval_hits", "retrievals", on_delete: :cascade

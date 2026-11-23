@@ -49,3 +49,9 @@ My notes for the README and the interview, in my own words. The AI assistant add
 - Three signals: weekly post counts near each theme's centre (6 weeks), look-alike posts from earlier weeks, and betas/releases from the last 14 days.
 - The AnkiMobile 26.10 release shows as 4 → 38 → 25 posts a week: a spike that is decaying.
 - Predictions must be checkable, cite their reasons, and state a confidence. Only data from before the week's end is used, so the backtest can't cheat.
+
+## Step 9: backtest
+
+- Reports use only pre-week data (tested with a planted future post); only the scorer looks forward.
+- 4 weeks, 13 scored predictions: hit rate 0.42. High confidence (0.25) did not beat low (0.50): small sample, but the confidence is not trustworthy yet.
+

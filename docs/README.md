@@ -12,6 +12,7 @@ Read in this order. Each page is about one screen.
 6. [Themes](steps/06-themes.md): k-means over threads, choosing k, SQL counts, the LLM names each cluster
 7. [Write the report](steps/07-report.md): per-theme retrieval, numbered evidence, cite-or-omit, checks in code
 8. [Predict next week](steps/08-predictions.md): trend counts, earlier look-alikes, betas and releases, checkable claims
+9. [Backtest](steps/09-backtest.md): score past predictions against the week that followed, with no peeking
 
 ## Concepts
 
@@ -22,6 +23,7 @@ Read in this order. Each page is about one screen.
 - [ETL and ingestion](concepts/etl-and-ingestion.md)
 - [Retrieval](concepts/retrieval.md): top-k, cut-offs, filtered HNSW, diversity, hybrid search, measuring it
 - [Clustering](concepts/clustering.md): k-means, its weaknesses, why threads not posts
+- [Evaluating RAG](concepts/evaluating-rag.md): checks in code, judges, baselines, backtests
 - [Grounded prompting](concepts/grounded-prompting.md): numbered evidence, citations, quotes, checks in code
 
 ## Also
