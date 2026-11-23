@@ -1,6 +1,6 @@
 # Running notes
 
-My notes for the README and the interview, in my own words. Claude adds a short entry at the end of each step; I edit them.
+My notes for the README and the interview, in my own words. The AI assistant adds a short entry at the end of each step; I edit them.
 
 ## Step 1: scaffold
 
@@ -28,3 +28,11 @@ My notes for the README and the interview, in my own words. Claude adds a short 
 - Max 2 chunks per thread took the top 8 from 3.9 threads to 5.5, with the same hit rate.
 - HNSW gotcha: the date filter is applied after the index walk, so raise `ef_search` or a narrow window comes back short.
 - 15 hand-labelled queries; the eval caught a mistake in my own labels. Measure every change.
+
+## Step 6: themes
+
+- Themes = k-means over *threads* (average of each thread's chunk vectors that week), seeded so a week always gives the same answer.
+- Why that k: text has no natural k (silhouette ~0.1 for every k). So k = about one theme per 12 threads, between 4 and 8; a fixed 8 splintered a quiet week into one-thread themes.
+- SQL counts threads, posts and people. The LLM only names each cluster, from titles and excerpts, in one structured-output call.
+- Week of 2026-11-16: the AnkiMobile 26.10 release dominated (two themes), then lost decks and sync. One cluster was a mixed bag: k-means makes every thread join some group.
+- All LLM calls go through one provider-neutral, injected `Llm` interface (Anthropic adapter by default), which records tokens and cost for the A/B comparison.
