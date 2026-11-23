@@ -1,0 +1,27 @@
+<% content_for(:title, "Charts · Community Voices") %>
+<h1>Charts</h1>
+<p class="muted">Everything here is drawn from the database. Figures are described by the server and drawn by <a href="https://plotly.com/javascript/">Plotly</a> through a small Stimulus controller.</p>
+
+<% @sections.each do |title, charts, empty| %>
+  <h2><%= title %></h2>
+  <% if charts.empty? %>
+    <p class="muted"><%= empty %></p>
+  <% end %>
+  <% charts.each do |chart| %>
+    <figure>
+      <figcaption><strong><%= chart.title %></strong><br><span class="muted"><%= chart.caption %></span></figcaption>
+      <div id="<%= chart.id %>" class="plot" data-controller="plot"
+           data-plot-traces-value="<%= chart.traces.to_json %>" data-plot-layout-value="<%= chart.layout.to_json %>"></div>
+    </figure>
+  <% end %>
+  <% if title == "Retrieval stats" && (rows = @retrieval.purposes).any? %>
+    <table>
+      <thead><tr><th>Purpose</th><th>Searches</th><th>Found nothing</th><th>Avg chunks returned</th><th>Avg ms</th></tr></thead>
+      <tbody>
+        <% rows.each do |row| %>
+          <tr><td><%= row[:purpose] %></td><td><%= row[:searches] %></td><td><%= row[:empty] %></td><td><%= row[:hits] %></td><td><%= row[:ms] %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+<% end %>

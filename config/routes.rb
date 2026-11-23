@@ -10,5 +10,6 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   resources :reports, only: %i[index show create]
+  resources :charts, only: :index
   root "reports#index"
 end
