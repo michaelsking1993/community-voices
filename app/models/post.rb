@@ -1,5 +1,6 @@
 class Post < ApplicationRecord
   belongs_to :topic
+  has_many :chunks, dependent: :destroy
 
   validates :discourse_id, :post_number, :username, :raw, :posted_at, presence: true
 

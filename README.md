@@ -22,9 +22,11 @@ docker compose up -d db
 bin/setup
 ```
 
-`bin/setup` crawls the last 2 weeks of the forum (about 20 seconds). For the full 12 weeks of history: `bin/rails 'ingest:backfill[12]'` (about 2 minutes; set `BACKFILL_WEEKS=12` with Docker). After that, `IngestWeekJob` runs every Monday at 6am.
+`bin/setup` crawls the last 2 weeks of the forum (about 20 seconds), then chunks and embeds them locally (about a minute; the first run downloads a ~90 MB model). For the full 12 weeks of history: `bin/rails 'ingest:backfill[12]'` (about 2 minutes to crawl and 5 to embed; set `BACKFILL_WEEKS=12` with Docker). After that, `IngestWeekJob` runs every Monday at 6am.
 
-Run the tests with `bundle exec rspec`.
+Spot-check the embeddings: `bin/rails 'ingest:nearest[sync problems]'`.
+
+Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model` to also run the real embedding model).
 
 ## The problem, restated
 
@@ -42,6 +44,7 @@ See [`DECISIONS.md`](DECISIONS.md) for the full log.
 |---|---|
 | `topics` | One row per forum thread: title, slug, category ("Anki › FSRS") |
 | `posts` | One row per forum post: author, raw text, date. Keyed on the forum's own id |
+| `chunks` | Up to 150 words of one post, with a topic/category/date header, a content hash, and a 384-number embedding (HNSW index) |
 
 ## Shape of the system, and why
 

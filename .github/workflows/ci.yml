@@ -95,6 +95,17 @@ jobs:
       - name: Run RSpec
         run: bundle exec rspec
 
+      - name: Cache the embedding model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/informers
+          key: informers-all-MiniLM-L6-v2
+
+      - name: Run the real embedding model specs
+        run: bundle exec rspec --tag model
+        env:
+          RUN_MODEL_SPECS: "1"
+
   docker:
     # Proves the reviewer path works: a clean `docker compose` build can
     # create the databases and run the specs inside the container.
