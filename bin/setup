@@ -22,6 +22,9 @@ FileUtils.chdir APP_ROOT do
   system! "bin/rails db:prepare"
   system! "bin/rails db:reset" if ARGV.include?("--reset")
 
+  puts "\n== Ingesting forum posts (BACKFILL_WEEKS=#{ENV.fetch("BACKFILL_WEEKS", 2)}) =="
+  system! "bin/rails ingest:backfill"
+
   puts "\n== Removing old logs and tempfiles =="
   system! "bin/rails log:clear tmp:clear"
 
