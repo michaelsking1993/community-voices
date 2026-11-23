@@ -6,7 +6,7 @@ A crawler that reads the Anki forum's public Discourse JSON API, one request per
 
 ## Why this way
 
-- **`/posts.json` instead of walking every topic.** It returns the 50 newest posts *with their raw text* and pages backwards with `?before=<post id>`. One week is about 7 requests. Walking topics would cost one request per topic (60+ a week) plus extra pages for long threads. (DECISIONS #7)
+- **`/posts.json` instead of walking every topic.** Each request returns 50 posts *with their raw text*; we keep asking for the next 50 older ones (`?before=<oldest id so far>`) until a whole page is older than the cut-off date. A week of about 330 posts is about 7 requests. Walking topics would cost one request per topic (60+ a week) plus extra pages for long threads. (DECISIONS #7)
 - **Upsert by the forum's post id.** Running the crawler twice, or overlapping two weekly runs, updates rows instead of duplicating them. That makes retries and the 8-day overlap safe. (DECISIONS #8)
 - **One request per second, a clear User-Agent, and backing off on HTTP 429.** It is someone else's server. (DECISIONS #9)
 - **Filter at ingest only what is never useful** (moderator actions, hidden and deleted posts). Short "thanks!" posts are kept here and skipped at the chunking step, so post counts still match the forum.
