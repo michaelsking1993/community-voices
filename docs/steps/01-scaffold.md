@@ -25,7 +25,7 @@ docker compose up
 
 ## What I learned
 
-pgvector is not a new database. It is a Postgres extension that adds one column type (a fixed-length list of floats) and a few operators to compare them, plus index types (HNSW, IVFFlat) that make "find the nearest vectors" fast. Everything else stays normal Postgres: joins, `WHERE` clauses, transactions, backups.
+pgvector is a Postgres extension that adds one column type (a fixed-length list of floats) and a few operators to compare them, plus index types (HNSW, IVFFlat) that make "find the nearest vectors" fast. Everything else stays normal Postgres: joins, `WHERE` clauses, transactions, backups.
 
 ## What I would do next
 
