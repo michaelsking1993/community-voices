@@ -45,7 +45,7 @@ See [`DECISIONS.md`](DECISIONS.md) for the full log.
 | `topics` | One row per forum thread: title, slug, category ("Anki › FSRS") |
 | `posts` | One row per forum post: author, raw text, date. Keyed on the forum's own id |
 | `chunks` | Up to 150 words of one post, with a topic/category/date header, a content hash, and a 384-number embedding (HNSW index) |
-| `themes`, `theme_topics` | A week's themes: a label, summary and kind written by Claude, counts from SQL, and the threads in each |
+| `themes`, `theme_topics` | A week's themes: a label, summary and kind written by the LLM, counts from SQL, and the threads in each |
 | `reports` | A generated report: the model's structured answer, the numbered evidence it cited, the citation and quote checks, tokens and cost. Outputs only, never searched |
 | `retrievals`, `retrieval_hits` | Every search the app runs: the query, window and settings, and each chunk it returned with its rank and distance |
 

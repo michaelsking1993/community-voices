@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Llm::Client do
+RSpec.describe Llm::Anthropic do
   let(:schema) { { type: "object", properties: { label: { type: "string" } }, required: [ "label" ], additionalProperties: false } }
   let(:client) { described_class.new(api_key: "test-key", model: "claude-opus-5-5") }
 
@@ -30,11 +30,11 @@ RSpec.describe Llm::Client do
   it "fails loudly when the answer was cut off, instead of parsing half a JSON document" do
     stub_messages(stop_reason: "max_tokens", text: '{"lab')
 
-    expect { client.json(system: "s", prompt: "p", schema:) }.to raise_error(Llm::Client::Failed, /max_tokens/)
+    expect { client.json(system: "s", prompt: "p", schema:) }.to raise_error(Llm::Failed, /max_tokens/)
   end
 
   it "explains how to fix a missing key" do
     expect { described_class.new(api_key: nil).json(system: "s", prompt: "p", schema:) }
-      .to raise_error(Llm::Client::NotConfigured, /ANTHROPIC_API_KEY/)
+      .to raise_error(Llm::NotConfigured, /ANTHROPIC_API_KEY/)
   end
 end

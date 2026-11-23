@@ -3,13 +3,15 @@ module Themes
   #
   # 1. Vectors   one per forum thread: the average of its chunks' embeddings
   #              from that week (pgvector's avg() does this in SQL).
-  # 2. Cluster   k-means groups threads that point the same way.
-  # 3. Name      one model call labels every cluster from a few excerpts.
+  # 2. Cluster   k-means groups threads that point the same way; k is
+  #              about one theme per 12 threads, between 4 and 8.
+  # 3. Name      one LLM call labels every cluster from a few excerpts.
   #
   # Counts (threads, posts, authors) come from SQL. The model only names
   # and summarises; it never counts. Re-running a week replaces its themes.
   class Finder
-    K = 8              # themes per week (~60 threads, so ~8 threads each)
+    THREADS_PER_THEME = 12 # k = threads / 12, kept between 4 and 8 (see step 6 page)
+    K_RANGE = 4..8
     EXCERPTS = 5       # threads shown to the model per cluster
     TITLES = 12        # thread titles listed per cluster
     EXCERPT_WORDS = 80
@@ -36,7 +38,7 @@ module Themes
 
     Cluster = Data.define(:number, :centroid, :members) # members: [[topic_id, similarity]], closest first
 
-    def initialize(llm: Llm::Client.new(effort: :low), k: K)
+    def initialize(llm: Llm.client(effort: :low), k: nil)
       @llm = llm
       @k = k
     end
@@ -62,7 +64,7 @@ module Themes
     end
 
     def cluster(vectors)
-      result = KMeans.new(k: @k).call(vectors.values)
+      result = KMeans.new(k: @k || k_for(vectors.size)).call(vectors.values)
       ids = vectors.keys
       result.centroids.each_with_index.filter_map do |centroid, number|
         members = ids.each_index.select { |i| result.assignments[i] == number }
@@ -71,6 +73,10 @@ module Themes
         Cluster.new(number: number + 1, centroid:, members:) if members.any?
       end
     end
+
+    # About 12 threads per theme: a busy week (~100 threads) gets 8 themes,
+    # a quiet one (~50) gets 4, instead of splintering into one-thread themes.
+    def k_for(threads) = (threads / THREADS_PER_THEME.to_f).round.clamp(K_RANGE)
 
     def name(clusters, week)
       prompt = "Week: #{week}\n\n" + clusters.map { |c| describe(c, week) }.join("\n\n")

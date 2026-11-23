@@ -2,7 +2,7 @@ class ReportsController < ApplicationController
   def index
     @weeks = weeks_with_posts
     @reports = Report.latest_first.limit(50).group_by(&:week_start)
-    @configured = Llm::Client.new.configured?
+    @configured = Llm.client.configured?
   end
 
   def show

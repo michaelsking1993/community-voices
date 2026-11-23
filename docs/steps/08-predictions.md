@@ -10,7 +10,7 @@ The report now ends with 3 to 5 predictions for next week, each with a claim som
 - **Known events as citable evidence.** Beta and release threads (by category or title) from the last 14 days are added as numbered evidence, so a prediction like "26.11 will ship" can cite the beta thread. (DECISIONS #34)
 - **Checkable claims, stated confidence.** The prompt asks for claims that can be checked against next week's posts, and for "high" only when several signals agree. That is what makes the backtest in step 9 possible. (DECISIONS #35)
 - **Nothing from the future.** Every signal uses only data from before the end of the report's week. Run the builder for an older week and it cannot see what happened next. A spec checks a future beta does not leak in.
-- **Same call as the report.** One model call writes both halves, so each A/B arm has one cost and one set of checks. Grounding also checks the citations in each prediction's reasoning.
+- **Same call as the report.** One LLM call writes both halves, so each A/B arm has one cost and one set of checks. Grounding also checks the citations in each prediction's reasoning.
 
 ## How it works
 
@@ -44,13 +44,13 @@ For the week of 2026-11-16, the trend lines read:
 
 The AnkiMobile 26.10 release (2026-11-09) shows as a jump from about 4 posts a week to 38, then 25: exactly the kind of decay a prediction should talk about. Lost decks are a steady background of 12 to 41 a week. The events found were the AnkiMobile 26.10.1 release, the 26.10.x beta thread (already mentioning 26.10.2), the Anki 26.11 Beta 1, and the experimental editor test.
 
-**Choosing 0.35.** At 0.45 every theme counted 25 to 140 posts a week, because all chunks share the "Topic / Category / Date" header and sit fairly close to every centre. At 0.35 the counts are small and the 26.10 spike stands out clearly. The numbers are a signal for the model, not exact topic counts, and the prompt says so.
+**Choosing 0.35.** At 0.45 every theme counted 25 to 140 posts a week, because all chunks share the "Topic / Category / Date" header and sit fairly close to every centre. At 0.35 the counts are small and the 26.10 spike stands out clearly. The numbers are a rough signal for the LLM, not exact topic counts, and the prompt says so.
 
 _Live predictions: to do once the API key is set; the backtest in step 9 scores them._
 
 ## What I learned
 
-Predicting "what people will talk about" is mostly reading signals that already exist: a spike decaying after a release, a steady background problem, a beta that will become a release. Retrieval's job here is to find those signals in history; the model's job is to weigh them and say how sure it is. Making predictions checkable and forbidding future data is what turns them from a guess into something you can score.
+Predicting "what people will talk about" is mostly reading signals that already exist: a spike decaying after a release, a steady background problem, a beta that will become a release. Retrieval's job here is to find those signals in history; the LLM's job is to weigh them and say how sure it is. Making predictions checkable and forbidding future data is what turns them from a guess into something you can score.
 
 ## What I would do next
 
