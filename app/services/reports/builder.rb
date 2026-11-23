@@ -5,7 +5,8 @@ module Reports
   # 2. Evidence   numbered chunks per theme, from an evidence source
   #               (RagEvidence here; the A/B step swaps in other arms)
   # 3. Write      one structured-output call: headline, overview, a section
-  #               per theme with cited claims and word-for-word quotes
+  #               per theme with cited claims and word-for-word quotes, and
+  #               predictions for next week with reasons and citations
   # 4. Check      Grounding verifies every citation and quote in code
   # 5. Save       a Report with content, evidence, checks, tokens and cost
   #
@@ -27,6 +28,14 @@ module Reports
       - Plain, specific language. No marketing tone and no advice to forum users.
 
       Write a headline (one sentence), an overview (2 to 3 sentences on the week as a whole), and one section per theme, in the order given. Each section has a short title, a body of 2 to 4 sentences, and its quotes.
+
+      Then predict 3 to 5 things the forum will discuss next week. Each prediction:
+      - claim: one sentence someone could check against next week's posts, e.g. "Threads about AnkiMobile toolbar changes will keep coming but fewer than this week."
+      - reasoning: why, citing evidence ids, using the weekly trend counts, the earlier-weeks evidence, and any releases or betas listed.
+      - basis: "trend" (the counts), "recurring" (it came up before), or "event" (a release, beta or announcement).
+      - confidence: low, medium or high. Use high only when several signals agree.
+      - theme: the theme number it is about, or 0 if none.
+      Do not predict anything you have no signal for. If there is no signal for next week, return no predictions.
     PROMPT
 
     QUOTE = { type: "object", additionalProperties: false, required: %w[evidence text],
@@ -34,9 +43,13 @@ module Reports
     SECTION = { type: "object", additionalProperties: false, required: %w[theme title body quotes],
                 properties: { theme: { type: "integer" }, title: { type: "string" }, body: { type: "string" },
                               quotes: { type: "array", items: QUOTE } } }.freeze
-    SCHEMA = { type: "object", additionalProperties: false, required: %w[headline overview sections],
+    PREDICTION = { type: "object", additionalProperties: false, required: %w[claim reasoning basis confidence theme],
+                   properties: { claim: { type: "string" }, reasoning: { type: "string" },
+                                 basis: { type: "string", enum: %w[trend recurring event] },
+                                 confidence: { type: "string", enum: %w[low medium high] }, theme: { type: "integer" } } }.freeze
+    SCHEMA = { type: "object", additionalProperties: false, required: %w[headline overview sections predictions],
                properties: { headline: { type: "string" }, overview: { type: "string" },
-                             sections: { type: "array", items: SECTION } } }.freeze
+                             sections: { type: "array", items: SECTION }, predictions: { type: "array", items: PREDICTION } } }.freeze
 
     def initialize(llm: Llm::Client.new, evidence_source: RagEvidence.new, theme_finder: nil, arm: "rag")
       @llm = llm
@@ -77,7 +90,17 @@ module Reports
     def prompt(week, themes, evidence)
       facts = WeekFacts.new
       [ "Week: #{week}", facts.to_prompt(facts.call(week)), "# Themes, biggest first",
-        *themes.map { theme_block(_1, evidence) } ].join("\n\n")
+        *themes.map { theme_block(_1, evidence) }, *signals_block(week, evidence) ].join("\n\n")
+    end
+
+    def signals_block(week, evidence)
+      events = evidence.for_theme(0)
+      lines = [ "# Signals for next week (#{week.next})" ]
+      if evidence.signals.any?
+        lines << "Posts per week close to each theme, oldest first, the last number is this week:\n#{evidence.signals.join("\n")}"
+      end
+      lines.push("Releases, betas and announcements active in the last two weeks:", *events.map(&:to_prompt)) if events.any?
+      lines.size > 1 ? lines : []
     end
 
     def theme_block(theme, evidence)

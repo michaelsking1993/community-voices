@@ -15,8 +15,12 @@ module Reports
     end
 
     attr_reader :items
+    attr_accessor :signals # plain-text lines for the prompt, e.g. weekly trend counts
 
-    def initialize(items = []) = @items = items
+    def initialize(items = [])
+      @items = items
+      @signals = []
+    end
 
     def add(chunk, theme:, history: false)
       Item.from_chunk("E#{items.size + 1}", chunk, theme:, history:).tap { items << _1 }

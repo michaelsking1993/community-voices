@@ -5,13 +5,15 @@ module Reports
   #
   # Themes with no chunk under the retriever's distance cut-off get no
   # evidence, and the report lists them as "not enough evidence".
+  # Signals for predictions (trends, releases) are added at the end.
   class RagEvidence
     THIS_WEEK = 6        # chunks per theme from the report's week
     HISTORY = 3          # chunks per theme from earlier weeks
     HISTORY_WEEKS = 12
 
-    def initialize(retriever: Search::Retriever.new)
+    def initialize(retriever: Search::Retriever.new, signals: Signals.new)
       @retriever = retriever
+      @signals = signals
     end
 
     attr_reader :retrievals
@@ -24,7 +26,7 @@ module Reports
         add(evidence, theme, retrieve(query, week.range, THIS_WEEK, "report"))
         add(evidence, theme, retrieve(query, history_window(week), HISTORY, "report_history", per_topic: 1), history: true)
       end
-      evidence
+      @signals.call(week, themes, evidence)
     end
 
     private

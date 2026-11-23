@@ -13,7 +13,9 @@ RSpec.describe Reports::Builder do
       else
         { headline: "Sync lost decks.", overview: "People lost decks after syncing [E1].",
           sections: [ { theme: 1, title: "Lost decks", body: "Decks vanished after sync [E1].",
-                        quotes: [ { evidence: "E1", text: "my deck vanished after sync" } ] } ] }
+                        quotes: [ { evidence: "E1", text: "my deck vanished after sync" } ] } ],
+          predictions: [ { claim: "More lost-deck threads next week.", reasoning: "It keeps recurring [E3].",
+                           basis: "recurring", confidence: "medium", theme: 1 } ] }
       end
     end
   end
@@ -41,7 +43,9 @@ RSpec.describe Reports::Builder do
 
       expect(report).to have_attributes(status: "done", arm: "rag", week_start: week.start, model: "fake-model")
       expect(report.sections.first["title"]).to eq("Lost decks")
-      expect(report.grounding).to include("citations_valid" => 2, "quotes_verbatim" => 1)
+      expect(report.grounding).to include("citations_valid" => 3, "quotes_verbatim" => 1)
+      expect(report.predictions.first).to include("claim" => "More lost-deck threads next week.", "basis" => "recurring")
+      expect(report.markdown).to include("## Next week", "**More lost-deck threads next week.** (medium confidence)")
       expect(report.evidence["E1"]).to include("url" => a_string_starting_with("https://forums.ankiweb.net/t/sync-"))
       expect(report.markdown).to include("# Community Voices: Anki forums, 2026-11-16 to 2026-11-22", "[[1]](https://forums.ankiweb.net")
       expect(report.content["themes"].first).to include("label" => "Sync loses decks", "topic_count" => 2)
@@ -53,7 +57,9 @@ RSpec.describe Reports::Builder do
 
       expect(call[:system]).to include("Use only the evidence given", "word for word")
       expect(call[:prompt]).to include("2 posts in 2 threads by 2 people", "## Theme 1: Sync loses decks",
-                                       "Evidence from this week:", "Similar posts from earlier weeks", "last month")
+                                       "Evidence from this week:", "Similar posts from earlier weeks", "last month",
+                                       "# Signals for next week (2026-11-23 to 2026-11-29)", "Theme 1 (Sync loses decks):")
+      expect(call[:system]).to include("predict 3 to 5 things")
     end
 
     it "links its retrievals to the report, for the stats page" do

@@ -32,7 +32,7 @@ Try it: `bin/rails report:build` (last complete week) or `bin/rails 'report:buil
 
 ## Check
 
-A dry run on the week of 2026-11-16, with a stand-in model, showed every one of the 6 themes found 6 chunks from the week and 3 from earlier weeks, and the whole prompt is about 7,000 tokens (about $0.03 per report at Opus 5.5 prices). That is roughly a seventh of the week's ~50,000 tokens of posts. The live run with Claude is below.
+A dry run on the week of 2026-11-16, with a stand-in model, showed every one of the 6 themes found 6 chunks from the week and 3 from earlier weeks, and the prompt was about 7,000 tokens (about 8,100 with step 8's signals; about $0.04 per report at Opus 5.5 prices). That is roughly a sixth of the week's ~50,000 tokens of posts. The live run with Claude is below.
 
 _Live run: to do once the API key is set._
 
