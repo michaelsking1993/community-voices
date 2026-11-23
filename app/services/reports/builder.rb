@@ -38,6 +38,18 @@ module Reports
       Do not predict anything you have no signal for. If there is no signal for next week, return no predictions.
     PROMPT
 
+    # The no-context arm: the same job with nothing attached, i.e. what you
+    # get from just asking an LLM. Same JSON shape, so the same checks run.
+    SYSTEM_PLAIN = <<~PROMPT.freeze
+      You write "Community Voices", a weekly report on what people said in the Anki forums (forums.ankiweb.net), for the people who build Anki.
+
+      You have not been given this week's posts. Write the best report you can from what you know, and say plainly when something is a guess.
+
+      Write a headline (one sentence), an overview (2 to 3 sentences) and 3 to 6 sections, each with a short title and a body of 2 to 4 sentences. Use theme 0 for every section and leave quotes empty: you have no posts to quote.
+
+      Then predict 3 to 5 things the forum will discuss next week. Each prediction: a claim someone could check against next week's posts, your reasoning in plain words (no citations: there is no evidence to cite), a basis (trend, recurring or event), a confidence (low, medium or high) and theme 0.
+    PROMPT
+
     QUOTE = { type: "object", additionalProperties: false, required: %w[evidence text],
               properties: { evidence: { type: "string" }, text: { type: "string" } } }.freeze
     SECTION = { type: "object", additionalProperties: false, required: %w[theme title body quotes],
@@ -51,21 +63,24 @@ module Reports
                properties: { headline: { type: "string" }, overview: { type: "string" },
                              sections: { type: "array", items: SECTION }, predictions: { type: "array", items: PREDICTION } } }.freeze
 
-    def initialize(llm: Llm.client, evidence_source: RagEvidence.new, theme_finder: nil, arm: "rag")
+    # grounded: false is the no-context arm: no themes, counts or evidence,
+    # just the week's dates.
+    def initialize(llm: Llm.client, evidence_source: RagEvidence.new, theme_finder: nil, arm: "rag", grounded: true)
       @llm = llm
       @evidence_source = evidence_source
       @theme_finder = theme_finder || Themes::Finder.new(llm:)
       @arm = arm
+      @grounded = grounded
     end
 
     def call(week)
       report = Report.create!(week_start: week.start, arm: @arm)
-      themes = themes_for(week)
+      themes = @grounded ? themes_for(week) : []
       evidence = @evidence_source.call(week, themes)
       Retrieval.where(id: Array(@evidence_source.try(:retrievals)).map(&:id)).update_all(report_id: report.id)
-      covered = themes.select { |t| evidence.for_theme(t.position).any? }
+      covered = themes.select { |t| evidence.whole_week.any? || evidence.for_theme(t.position).any? }
 
-      content, response = covered.empty? ? [ not_enough_evidence, nil ] : write(week, covered, evidence)
+      content, response = @grounded && covered.empty? ? [ not_enough_evidence, nil ] : write(week, covered, evidence)
       content = content.merge("themes" => covered.map { snapshot(_1) },
                               "thin_themes" => (themes - covered).map { snapshot(_1) })
       save(report, content, evidence, response)
@@ -83,14 +98,22 @@ module Reports
     end
 
     def write(week, themes, evidence)
-      response = @llm.json(system: SYSTEM, prompt: prompt(week, themes, evidence), schema: SCHEMA)
+      response = @llm.json(system: @grounded ? SYSTEM : SYSTEM_PLAIN, prompt: prompt(week, themes, evidence), schema: SCHEMA)
       [ response.data, response ]
     end
 
     def prompt(week, themes, evidence)
+      return "Week: #{week}" unless @grounded
+
       facts = WeekFacts.new
       [ "Week: #{week}", facts.to_prompt(facts.call(week)), "# Themes, biggest first",
-        *themes.map { theme_block(_1, evidence) }, *signals_block(week, evidence) ].join("\n\n")
+        *themes.map { theme_block(_1, evidence) }, *whole_week_block(evidence), *signals_block(week, evidence) ].join("\n\n")
+    end
+
+    # The paste-all arm: every post of the week, unsorted, after the themes.
+    def whole_week_block(evidence)
+      posts = evidence.whole_week
+      posts.any? ? [ "# Every post from this week, grouped by thread", *posts.map(&:to_prompt) ] : []
     end
 
     def signals_block(week, evidence)
@@ -107,8 +130,14 @@ module Reports
       history = evidence.for_theme(theme.position, history: true)
       [ "## Theme #{theme.position}: #{theme.label} [#{theme.kind}] (#{theme.topic_count} threads, #{theme.post_count} posts, #{theme.author_count} people)",
         "What the clustering step saw: #{theme.summary}",
-        "Evidence from this week:", *evidence.for_theme(theme.position).map(&:to_prompt),
+        *evidence_lines(theme, evidence),
         *([ "Similar posts from earlier weeks (context):", *history.map(&:to_prompt) ] if history.any?) ].join("\n\n")
+    end
+
+    def evidence_lines(theme, evidence)
+      return [ "Evidence: find it in the posts listed below." ] if evidence.whole_week.any?
+
+      [ "Evidence from this week:", *evidence.for_theme(theme.position).map(&:to_prompt) ]
     end
 
     def not_enough_evidence

@@ -14,6 +14,8 @@ module Reports
       def to_prompt = "[#{id}] #{date} · #{category} · \"#{title}\"\n#{text}"
     end
 
+    WHOLE_WEEK = -1 # theme number for posts that belong to no theme (the paste-all arm)
+
     attr_reader :items
     attr_accessor :signals # plain-text lines for the prompt, e.g. weekly trend counts
 
@@ -27,6 +29,7 @@ module Reports
     end
 
     def [](id) = items.find { _1.id == id }
+    def whole_week = items.select { _1.theme == WHOLE_WEEK }
     def for_theme(position, history: false) = items.select { _1.theme == position && _1.history == history }
     def empty? = items.none? { !_1.history }
     def to_h = items.to_h { [ _1.id, _1.to_h.except(:id) ] }
