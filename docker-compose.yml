@@ -1,0 +1,41 @@
+# Two ways to run:
+#   docker compose up              -> Postgres + the app on http://localhost:3000
+#   docker compose up -d db        -> only Postgres, then run Rails on your machine
+services:
+  db:
+    image: pgvector/pgvector:pg16 # Postgres 16 with the pgvector extension built in
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      retries: 30
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bin/setup
+    environment:
+      DB_HOST: db
+      BACKFILL_WEEKS: ${BACKFILL_WEEKS:-2}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      BINDING: 0.0.0.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - bundle:/usr/local/bundle
+      - models:/root/.cache # downloaded embedding model, kept between runs
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  bundle:
+  models:

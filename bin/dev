@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+# Runs the web server with Solid Queue inside Puma, so the weekly
+# IngestWeekJob schedule (config/recurring.yml) fires in development too.
+ENV["SOLID_QUEUE_IN_PUMA"] ||= "1"
+args = ARGV.dup
+args += [ "-b", ENV["BINDING"] ] if ENV["BINDING"] && !args.include?("-b")
+exec "./bin/rails", "server", *args
