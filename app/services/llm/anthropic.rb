@@ -3,13 +3,12 @@ module Llm
   # `anthropic` gem and structured outputs, so the answer always matches
   # the JSON schema the caller passes.
   #
-  # Configured by LLM_API_KEY and LLM_MODEL, the same names any adapter
-  # reads. ANTHROPIC_API_KEY also works, since many machines already set it.
+  # Configured by LLM_API_KEY and LLM_MODEL, the same names any adapter reads.
   class Anthropic
     DEFAULT_MODEL = "claude-opus-5-5".freeze
     MAX_TOKENS = 16_000
 
-    def initialize(api_key: ENV["LLM_API_KEY"].presence || ENV["ANTHROPIC_API_KEY"], model: ENV["LLM_MODEL"], effort: :medium)
+    def initialize(api_key: ENV["LLM_API_KEY"], model: ENV["LLM_MODEL"], effort: :medium)
       @api_key = api_key
       @model = model.presence || DEFAULT_MODEL
       @effort = effort
