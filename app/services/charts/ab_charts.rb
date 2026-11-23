@@ -6,7 +6,7 @@ module Charts
       "Citations point at real posts" => :citations_valid,
       "Quotes found word for word" => :quotes_verbatim,
       "Sentences that cite a source" => ->(row) { row.sentences_uncited && (1 - row.sentences_uncited).round(2) },
-      "Cited sentences the judge found supported" => :support_rate
+      "Support score of cited sentences" => :support_rate
     }.freeze
 
     def call
@@ -25,7 +25,7 @@ module Charts
         bar(row.arm, CHECKS.keys, values, text: values.map { _1 ? "#{_1.round}%" : "n/a" })
       end
       Chart.build(id: "ab-checks", title: "Does the report stand on its sources?",
-                  caption: "Checks run in code (the first three) and by a judge (the fourth), pooled over #{weeks} week(s). \"n/a\" means the arm had nothing to check: with no posts in the prompt there is nothing to cite or quote.",
+                  caption: "Checks run in code (the first three) and by a judge (the fourth: supported counts 1, partly ½), pooled over #{weeks} week(s). \"n/a\" means the arm had nothing to check: with no posts in the prompt there is nothing to cite or quote.",
                   traces:, layout: { yaxis: { title: "%", range: [ 0, 105 ] }, barmode: "group" })
     end
 

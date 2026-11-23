@@ -1,7 +1,8 @@
 namespace :backtest do
   desc "Score the predictions of the last N weeks against what happened next (default 4). Example: bin/rails 'backtest:run[4]'"
   task :run, [ :weeks ] => :environment do |_, args|
-    run = Backtest::Run.new
+    judge = Llm.client(model: ENV["LLM_JUDGE_MODEL"].presence || ENV["LLM_MODEL"].presence)
+    run = Backtest::Run.new(scorer: Backtest::Scorer.new(llm: judge))
     weeks = run.weeks((args[:weeks] || 4).to_i)
     puts "Backtest over #{weeks.size} weeks: each report uses only data from before the week it predicts."
     judgements = run.call(weeks)

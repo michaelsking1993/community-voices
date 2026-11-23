@@ -21,7 +21,7 @@ module Charts
     def most_retrieved
       counts = RetrievalHit.group(:chunk_id).order(Arel.sql("count(*) desc")).limit(15).count
       chunks = Chunk.where(id: counts.keys).preload(post: :topic).index_by(&:id)
-      rows = counts.map { |id, n| [ chunks[id].post.topic.title.truncate(55), n ] }.reverse
+      rows = counts.map { |id, n| [ "#{chunks[id].post.topic.title.truncate(48)} · chunk #{id}", n ] }.reverse # unique labels: Plotly merges bars that share one
       Chart.build(id: "retrieval-top", title: "Which chunks get retrieved most?",
                   caption: "The 15 chunks that appeared in the most search results, by the title of the thread they come from. A few very popular chunks can mean the searches overlap; here the cut-off and per-thread cap keep it spread.",
                   traces: [ { type: "bar", orientation: "h", y: rows.map(&:first), x: rows.map(&:last), marker: { color: Palette::ARM_COLORS["rag"] }, showlegend: false } ],
