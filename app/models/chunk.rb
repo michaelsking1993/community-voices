@@ -7,10 +7,10 @@ class Chunk < ApplicationRecord
   # HNSW keeps only `hnsw.ef_search` candidates (default 40) and applies
   # WHERE clauses and row visibility after that. A date filter, or many
   # deleted rows still in the index, can then leave fewer results than
-  # asked for. This raises the limit for one transaction.
+  # asked for. This raises the limit for one transaction (`true` = local).
   def self.with_ef_search(value = 200)
     transaction do
-      connection.execute("SET LOCAL hnsw.ef_search = #{Integer(value)}")
+      connection.select_value(sanitize_sql_array([ "SELECT set_config('hnsw.ef_search', ?, true)", Integer(value).to_s ]))
       yield
     end
   end
