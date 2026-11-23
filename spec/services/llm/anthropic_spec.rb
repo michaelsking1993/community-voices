@@ -33,6 +33,14 @@ RSpec.describe Llm::Anthropic do
     expect { client.json(system: "s", prompt: "p", schema:) }.to raise_error(Llm::Failed, /max_tokens/)
   end
 
+  it "falls back to LLM_API_KEY when ANTHROPIC_API_KEY is not set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ANTHROPIC_API_KEY").and_return(nil)
+    allow(ENV).to receive(:[]).with("LLM_API_KEY").and_return("neutral-key")
+
+    expect(described_class.new).to be_configured
+  end
+
   it "explains how to fix a missing key" do
     expect { described_class.new(api_key: nil).json(system: "s", prompt: "p", schema:) }
       .to raise_error(Llm::NotConfigured, /ANTHROPIC_API_KEY/)

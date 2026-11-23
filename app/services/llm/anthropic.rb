@@ -3,12 +3,14 @@ module Llm
   # `anthropic` gem and structured outputs, so the answer always matches
   # the JSON schema the caller passes.
   #
-  # Configured by ANTHROPIC_API_KEY and ANTHROPIC_MODEL.
+  # Configured by ANTHROPIC_API_KEY (or the provider-neutral LLM_API_KEY,
+  # for hosts that reserve the ANTHROPIC_ names for themselves) and
+  # ANTHROPIC_MODEL.
   class Anthropic
     DEFAULT_MODEL = "claude-opus-5-5".freeze
     MAX_TOKENS = 16_000
 
-    def initialize(api_key: ENV["ANTHROPIC_API_KEY"], model: ENV.fetch("ANTHROPIC_MODEL", DEFAULT_MODEL), effort: :medium)
+    def initialize(api_key: ENV["ANTHROPIC_API_KEY"].presence || ENV["LLM_API_KEY"], model: ENV.fetch("ANTHROPIC_MODEL", DEFAULT_MODEL), effort: :medium)
       @api_key = api_key
       @model = model.presence || DEFAULT_MODEL
       @effort = effort
@@ -19,7 +21,7 @@ module Llm
     def configured? = @api_key.present?
 
     def json(system:, prompt:, schema:, max_tokens: MAX_TOKENS)
-      raise NotConfigured, "Set ANTHROPIC_API_KEY in .env to generate reports." unless configured?
+      raise NotConfigured, "Set ANTHROPIC_API_KEY (or LLM_API_KEY) in .env to generate reports." unless configured?
 
       started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       message = create(system:, prompt:, schema:, max_tokens:)
