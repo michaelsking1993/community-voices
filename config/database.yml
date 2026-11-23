@@ -1,0 +1,42 @@
+# Postgres with the pgvector extension. Locally, `docker compose up -d db`
+# gives you one on localhost:5432 (see docker-compose.yml).
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("DB_HOST") { "localhost" } %>
+  port: <%= ENV.fetch("DB_PORT") { 5432 } %>
+  username: <%= ENV.fetch("DB_USER") { "postgres" } %>
+  password: <%= ENV.fetch("DB_PASSWORD") { "postgres" } %>
+
+development:
+  primary:
+    <<: *default
+    database: community_voices_development
+  # Solid Queue keeps its job tables in a second database, so the weekly
+  # ingest job runs in development exactly as it would in production.
+  queue:
+    <<: *default
+    database: community_voices_development_queue
+    migrations_paths: db/queue_migrate
+
+test:
+  <<: *default
+  database: community_voices_test
+
+production:
+  primary: &primary_production
+    <<: *default
+    database: community_voices_production
+  cache:
+    <<: *primary_production
+    database: community_voices_production_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_production
+    database: community_voices_production_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_production
+    database: community_voices_production_cable
+    migrations_paths: db/cable_migrate
