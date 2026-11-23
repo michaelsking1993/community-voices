@@ -35,3 +35,10 @@ My notes for the README and the interview, in my own words. Claude adds a short 
 - SQL counts threads, posts and people. Claude only names each cluster, from titles and excerpts, in one structured-output call.
 - Week of 2026-11-16: the AnkiMobile 26.10 release dominated (two themes), then lost decks and sync. One cluster was a mixed bag: k-means makes every thread join some group.
 - All model calls go through one injected `Llm::Client`, which records tokens and cost for the A/B comparison.
+
+## Step 7: the report
+
+- One retrieval per theme (6 from the week, 3 from earlier weeks), numbered [E1].. in the prompt. About 7,000 tokens: a seventh of pasting the whole week.
+- Rules: cite after every claim, quote word for word, use only the SQL numbers. Code then counts valid citations, verbatim quotes, uncited sentences.
+- No evidence means no model call and a "Not enough evidence" report. Reports are never chunked, so the model never reads its own output.
+- The builder takes an evidence source, so the A/B arms share everything except the context.

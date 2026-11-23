@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_000005) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -44,6 +44,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000005) do
     t.index ["topic_id"], name: "index_posts_on_topic_id"
   end
 
+  create_table "reports", force: :cascade do |t|
+    t.date "week_start", null: false
+    t.string "arm", default: "rag", null: false
+    t.string "status", default: "pending", null: false
+    t.jsonb "content", default: {}, null: false
+    t.jsonb "evidence", default: {}, null: false
+    t.jsonb "grounding", default: {}, null: false
+    t.text "markdown"
+    t.string "model"
+    t.integer "input_tokens"
+    t.integer "output_tokens"
+    t.decimal "cost_usd", precision: 10, scale: 4
+    t.integer "duration_ms"
+    t.text "error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["week_start", "arm", "created_at"], name: "index_reports_on_week_start_and_arm_and_created_at"
+  end
+
   create_table "retrieval_hits", force: :cascade do |t|
     t.bigint "retrieval_id", null: false
     t.bigint "chunk_id", null: false
@@ -65,7 +84,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000005) do
     t.integer "hits_count", null: false
     t.integer "duration_ms", null: false
     t.datetime "created_at", null: false
+    t.bigint "report_id"
     t.index ["purpose", "created_at"], name: "index_retrievals_on_purpose_and_created_at"
+    t.index ["report_id"], name: "index_retrievals_on_report_id"
   end
 
   create_table "theme_topics", force: :cascade do |t|
@@ -108,6 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_000005) do
   add_foreign_key "posts", "topics"
   add_foreign_key "retrieval_hits", "chunks", on_delete: :cascade
   add_foreign_key "retrieval_hits", "retrievals", on_delete: :cascade
+  add_foreign_key "retrievals", "reports", on_delete: :nullify
   add_foreign_key "theme_topics", "themes", on_delete: :cascade
   add_foreign_key "theme_topics", "topics"
 end

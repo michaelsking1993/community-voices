@@ -10,6 +10,7 @@ Read in this order. Each page is about one screen.
 4. [Chunk and embed](steps/04-chunk-and-embed.md): headers, tiny-post skip, content hash, local model, HNSW
 5. [Retrieval](steps/05-retrieval.md): date window, distance cut-off, max 2 per thread, logging, a 15-query eval
 6. [Themes](steps/06-themes.md): k-means over threads, SQL counts, Claude names each cluster
+7. [Write the report](steps/07-report.md): per-theme retrieval, numbered evidence, cite-or-omit, checks in code
 
 ## Concepts
 
@@ -20,6 +21,7 @@ Read in this order. Each page is about one screen.
 - [ETL and ingestion](concepts/etl-and-ingestion.md)
 - [Retrieval](concepts/retrieval.md): top-k, cut-offs, filtered HNSW, diversity, hybrid search, measuring it
 - [Clustering](concepts/clustering.md): k-means, its weaknesses, why threads not posts
+- [Grounded prompting](concepts/grounded-prompting.md): numbered evidence, citations, quotes, checks in code
 
 ## Also
 
