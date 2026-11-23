@@ -41,13 +41,11 @@ module Search
 
     # HNSW only looks at `ef_search` neighbours (default 40), and pgvector
     # 0.6/0.7 applies the WHERE clause after that. With a narrow date window
-    # most of those 40 can be filtered out, so we raise ef_search for this
-    # one transaction.
+    # most of those 40 can be filtered out, so we raise ef_search.
     def nearest(vector, window)
       scope = Chunk.where.not(embedding: nil).joins(:post).preload(post: :topic)
       scope = scope.where(posts: { posted_at: window }) if window
-      Chunk.transaction do
-        Chunk.connection.execute("SET LOCAL hnsw.ef_search = #{EF_SEARCH}")
+      Chunk.with_ef_search(EF_SEARCH) do
         scope.nearest_neighbors(:embedding, vector, distance: "cosine").limit(CANDIDATES).to_a
       end
     end
