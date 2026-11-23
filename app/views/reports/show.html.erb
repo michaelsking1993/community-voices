@@ -1,0 +1,46 @@
+<% content_for(:title, "#{@report.week} · Community Voices") %>
+<p><%= link_to "← All reports", reports_path %></p>
+<h1>Community Voices: <%= @report.week %></h1>
+<p class="headline"><%= @report.content["headline"] %></p>
+<p><%= with_citations(@report.content["overview"], @evidence) %></p>
+
+<% themes = @report.content.fetch("themes", []).index_by { _1["position"] } %>
+<% @report.sections.each_with_index do |section, i| %>
+  <section>
+    <h2><%= i + 1 %>. <%= section["title"] %></h2>
+    <% if (theme = themes[section["theme"]]) %>
+      <p class="muted"><%= theme["topic_count"] %> threads · <%= theme["post_count"] %> posts · <%= theme["author_count"] %> people</p>
+    <% end %>
+    <p><%= with_citations(section["body"], @evidence) %></p>
+    <% section.fetch("quotes", []).each do |quote| %>
+      <% item = @evidence[quote["evidence"]] %>
+      <blockquote>“<%= quote["text"] %>” <% if item %><%= link_to item.title, item.url, class: "muted" %><% end %></blockquote>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @report.predictions.any? %>
+  <h2>Next week</h2>
+  <ul>
+    <% @report.predictions.each do |prediction| %>
+      <li><strong><%= prediction["claim"] %></strong> <span class="muted">(<%= prediction["confidence"] %> confidence)</span><br>
+        <%= with_citations(prediction["reasoning"], @evidence) %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<% if (thin = @report.content.fetch("thin_themes", [])).any? %>
+  <h2>Not enough evidence</h2>
+  <ul><% thin.each do |theme| %><li><%= theme["label"] %> (<%= theme["topic_count"] %> threads)</li><% end %></ul>
+<% end %>
+
+<h2>How this report was made</h2>
+<% g = @report.grounding %>
+<table>
+  <tr><th>Model</th><td><%= @report.model || "none (no evidence, no call)" %></td></tr>
+  <tr><th>Tokens</th><td><%= @report.input_tokens %> in · <%= @report.output_tokens %> out · ~$<%= @report.cost_usd %></td></tr>
+  <tr><th>Citations pointing at real posts</th><td><%= g["citations_valid"] %> of <%= g["citations"] %></td></tr>
+  <tr><th>Quotes found word for word</th><td><%= g["quotes_verbatim"] %> of <%= g["quotes"] %></td></tr>
+  <tr><th>Sentences without a citation</th><td><%= g["sentences_uncited"] %> of <%= g["sentences"] %></td></tr>
+</table>
+<p class="muted"><%= link_to "Markdown version", report_path(@report, format: :md) %></p>
