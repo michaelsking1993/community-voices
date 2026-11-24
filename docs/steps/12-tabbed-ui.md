@@ -8,6 +8,7 @@ One row of tabs on every page (`app/views/shared/_tabs.html.erb`):
 |---|---|---|
 | Community report | `/` | The weekly reports and the "Write report" button. Without `LLM_API_KEY` the page says so and disables the buttons; saved reports still open |
 | Search | `/search` | Type a question, get the forum chunks closest in meaning |
+| Evaluate | `/evaluation` | Buttons for the crawl, retrieval eval, A/B test and backtest, with cost warnings and each task's last result |
 | Charts | `/charts` | A/B test, backtest, embedding map, retrieval stats (step 11) |
 | Flashcards | `/flashcards` | "Coming soon" placeholder |
 
@@ -19,6 +20,8 @@ Opening a single report keeps the Community report tab lit.
 - **No key needed.** Embedding is local (all-MiniLM-L6-v2), so search works on a fresh clone with only the crawl done. The first search is slow while the model loads.
 - **Searches are logged** with purpose `search`, so they show up in the Charts retrieval stats like any other retrieval.
 - **An empty result is a message, not a guess.** Nothing within 0.6 means "the forum has no clear match".
+
+- **Every long task has a button.** Crawl, retrieval eval, A/B test and backtest run in a background job (`PipelineJob`) and save what they printed in `job_runs`. The rake tasks call the same `Pipeline::Runner`, so the terminal and the browser cannot drift apart. Tasks that spend money ask for confirmation, are disabled without `LLM_API_KEY`, and cannot be started twice at once. Evaluation is still never automatic. (#57)
 
 ## What to understand
 
@@ -34,4 +37,5 @@ Opening a single report keeps the Community report tab lit.
 
 - Filters for category and date range (the retriever already takes a window).
 - Hybrid search: add keyword matching for exact terms such as error codes.
+- Show live progress on the Evaluate tab (it needs a manual refresh today).
 - Flashcards: study cards for the RAG vocabulary and project facts ("What is Anki?"), a progress bar through the deck and a reset button.

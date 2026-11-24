@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_000008) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_000009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -28,6 +28,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_000008) do
     t.index ["embedding"], name: "index_chunks_on_embedding", opclass: :vector_cosine_ops, using: :hnsw
     t.index ["post_id", "position"], name: "index_chunks_on_post_id_and_position", unique: true
     t.index ["post_id"], name: "index_chunks_on_post_id"
+  end
+
+  create_table "job_runs", force: :cascade do |t|
+    t.string "kind", null: false
+    t.integer "weeks"
+    t.string "status", default: "queued", null: false
+    t.text "summary"
+    t.text "error"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind", "created_at"], name: "index_job_runs_on_kind_and_created_at"
   end
 
   create_table "judgements", force: :cascade do |t|

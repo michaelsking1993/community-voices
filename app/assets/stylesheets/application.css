@@ -32,3 +32,5 @@ nav { margin-bottom: 1rem; }
 .hit { padding: 0.75rem 0; border-bottom: 1px solid var(--line); }
 .hit p { margin: 0.25rem 0; }
 .distance { font-variant-numeric: tabular-nums; }
+pre { overflow-x: auto; padding: 0.75rem; border: 1px solid var(--line); border-radius: 4px; font-size: 0.85em; }
+section { margin-bottom: 2rem; }
