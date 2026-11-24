@@ -82,6 +82,18 @@ RSpec.describe Reports::Builder do
     expect(llm.calls.map { _1[:schema] }).to eq([ Themes::Finder::SCHEMA ])
   end
 
+  it "covers every theme with at least 2 threads, up to k-means' maximum, biggest first" do
+    9.times do |i|
+      Theme.create!(week_start: week.start, position: i + 1, label: "Theme #{i + 1}", summary: "About #{i + 1}.",
+                    kind: "problem", centroid: Array.new(384, 0.1), topic_count: i == 8 ? 1 : 3, post_count: 9 - i, author_count: 3)
+    end
+
+    report = described_class.new(llm:, evidence_source: Reports::NoEvidence.new).call(week)
+
+    expect(described_class::THEMES).to eq(Themes::Finder::K_RANGE.max)
+    expect(report.content["thin_themes"].map { _1["label"] }).to eq((1..8).map { "Theme #{_1}" })
+  end
+
   it "marks the report failed, with the reason, when the model call fails" do
     add_thread(1, sync_text)
     add_thread(2, "#{sync_text} again today")

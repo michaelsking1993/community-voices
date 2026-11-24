@@ -64,7 +64,7 @@ What this says:
 
 - **There is no "natural" k.** Silhouette (how much closer a thread is to its own cluster than to the next one; 1 is perfect, 0 is no structure) stays between 0.05 and 0.12 for every k. That is normal for text: topics blend into each other. So k is a reporting choice, not a fact about the data.
 - **A fixed 8 splinters quiet weeks.** On the 56-thread week, 3 of 8 "themes" had one or two threads.
-- **So k scales with the week:** about one theme per 12 threads, between 4 and 8. A busy week (93-99 threads) gets 8, the quiet one gets 5. The report then covers the top 6 themes with at least 2 threads.
+- **So k scales with the week:** about one theme per 12 threads, between 4 and 8. A busy week (93-99 threads) gets 8, the quiet one gets 5. The report then covers every theme with at least 2 threads (it covered only the top 6 until 2026-11-24, DECISIONS #55).
 
 ## What I learned
 
