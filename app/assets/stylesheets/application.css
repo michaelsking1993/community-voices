@@ -42,3 +42,13 @@ section { margin-bottom: 2rem; }
 .run-form .weeks { width: 4.5rem; padding: 0.3rem; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; }
 details { margin: 0.5rem 0; }
 summary { cursor: pointer; }
+
+/* Flashcards tab */
+.flashprogress { height: 6px; background: var(--line); border-radius: 3px; margin-bottom: 1rem; }
+.flashprogress div { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.15s; }
+.flashcard { display: block; width: 100%; min-height: 14rem; padding: 1.5rem; text-align: left; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+.flashterm { display: block; font-size: 1.5em; font-weight: 600; }
+.flashback { display: block; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.flashback strong, .flashback span { display: block; }
+.flashback strong { font-size: 0.8em; text-transform: uppercase; color: var(--muted); margin-top: 0.75rem; }
+.flashbuttons { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }

@@ -1,0 +1,94 @@
+# Study cards for the vocabulary learned while building this project.
+# Source of truth is this file; `backticks` render as code. Shown on the Flashcards tab.
+shared:
+  cards:
+  - term: Grounded
+    meaning: An answer tied to real sources you can check, not made up. The opposite is a hallucination.
+    where: '`Reports::Grounding` checks that the report''s citations and quotes really come from the evidence we sent.'
+  - term: RAG (retrieval-augmented generation)
+    meaning: Before asking a model to write, *retrieve* the relevant text and paste it into the prompt, so the answer rests on real material.
+    where: For each theme, we retrieve the closest chunks, then the LLM writes from them.
+  - term: Embedding / vector
+    meaning: A fixed-length list of numbers that represents a text's meaning. Similar meanings give lists that are close together.
+    where: Every chunk gets one list of 384 numbers.
+  - term: Dimensions
+    meaning: How many numbers an embedding model outputs. Fixed per model.
+    where: 384 for all-MiniLM-L6-v2, so the column is `vector(384)`.
+  - term: Embedding model
+    meaning: A small neural network that turns text into one embedding. It outputs numbers, never sentences. Same text in, same numbers out.
+    where: '`Xenova/all-MiniLM-L6-v2`, run locally through the `informers` gem.'
+  - term: Cosine similarity / distance
+    meaning: 'How alike two vectors are: multiply them number by number and add up. Near 1 means similar. Distance = 1 − similarity.'
+    where: We count a chunk as "about it" when its distance is under 0.6.
+  - term: pgvector
+    meaning: A Postgres extension that adds a `vector` column type, distance operators and vector indexes.
+    where: It holds every chunk's embedding, next to the posts.
+  - term: '`<=>`'
+    meaning: 'pgvector''s cosine-distance operator: `a <=> b` returns a distance from 0 to 2 (0 to 1 for related texts).'
+    where: '`ORDER BY embedding <=> query` in the Retriever, and the trend counts in `Signals`.'
+  - term: HNSW
+    meaning: 'An index that finds the nearest vectors fast without scanning every row. It''s approximate: it checks a limited number of candidates (`ef_search`).'
+    where: The index on `chunks.embedding`; we raise `ef_search` to 200.
+  - term: Chunk
+    meaning: A piece of a document small enough to embed well.
+    where: Up to 150 words of one post, plus a header. One row per chunk.
+  - term: Chunk overlap
+    meaning: Neighbouring chunks share some words, so a sentence cut at a boundary still appears whole in one chunk.
+    where: 30 words.
+  - term: Content hash
+    meaning: A fingerprint of a text (SHA-256). If it hasn't changed, the text hasn't.
+    where: Lets us skip re-embedding chunks that are unchanged.
+  - term: Query (in vector search)
+    meaning: The text you search with. It gets embedded too, and the closest chunks are returned.
+    where: 'Built by code from each theme: label + summary.'
+  - term: Top-k
+    meaning: Return the k closest results.
+    where: Each theme's budget (3 to 12 chunks).
+  - term: Evidence
+    meaning: The numbered items pasted into the prompt for the model to cite.
+    where: '`[E1]`, `[E2]`…: mostly one chunk each.'
+  - term: Citation
+    meaning: A pointer from a claim to its evidence.
+    where: The model writes `[E12]` after a claim; code checks that E12 exists.
+  - term: Temperature
+    meaning: A dial for how much randomness a chat model uses when picking each next word. Low is predictable, high is varied. The API caller sets it; chat apps hide it.
+    where: We don't set it; we use the provider's default.
+  - term: Clustering
+    meaning: Letting the computer find groups of similar items that nobody labelled in advance.
+    where: Grouping a week's threads into themes.
+  - term: k-means
+    meaning: 'A clustering game: plant k flags, everyone walks to the nearest flag, each flag moves to the middle of its crowd, repeat until nobody switches.'
+    where: 'Themes: one point per thread, k = threads ÷ 12 (4 to 8), seed 42.'
+  - term: Centroid (centre)
+    meaning: 'The average position of a group: where its flag ends up.'
+    where: A theme's centre; trend counts measure posts within 0.35 of it.
+  - term: Silhouette score
+    meaning: 'How much closer each item is to its own group than to the next group: 1 is perfectly separated, 0 is no real structure. Used to compare choices of k.'
+    where: Stayed 0.05 to 0.12 for every k, so there's no "natural" number of themes.
+  - term: HDBSCAN
+    meaning: A clustering method that finds crowded areas by itself (no k) and leaves loners out as noise.
+    where: 'Deferred: no Ruby library, and the scores showed little structure to find.'
+  - term: k-means++
+    meaning: 'A smarter way to place the first flags: the first goes on a random item, and each next one is picked with a preference for items far from every flag so far, so flags start spread out.'
+    where: '`Themes::KMeans#seed_centroids`, seed 42.'
+  - term: Semantic search
+    meaning: 'Searching by meaning instead of matching words: embed the query, return the closest vectors. "sync broken" finds "my iPad reviews don''t show on desktop".'
+    where: '`bin/rails ''retrieval:search[sync broken]''`, `Chunk.similar_to`.'
+  - term: Local optimum
+    meaning: A result that's stable (nothing wants to change) but not the best possible one, often because of where you started.
+    where: k-means can settle into a worse grouping from a bad start; k-means++ makes that less likely.
+  - term: A/B/n (multi-arm) test
+    meaning: An A/B test with more than two variants.
+    where: 'Ours has three arms: none, paste-all, RAG.'
+  - term: Backtest
+    meaning: 'Testing predictions on the past: take an old report''s predictions and score them against what actually happened the following week.'
+    where: '`bin/rails ''backtest:run[4]''`: hit rate 0.42 over 13 predictions.'
+  - term: Hit rate
+    meaning: 'The share of predictions that came true: happened = 1, partly = ½, didn''t = 0; "can''t tell" is left out.'
+    where: 0.42 overall; high confidence did worse (0.25) than low (0.50).
+  - term: Look-ahead leakage (peeking)
+    meaning: When a test accidentally uses information from after the moment it's pretending to be in, which makes results look better than they are.
+    where: Every query is bounded by the report's week; a spec plants a future post to prove it never leaks.
+  - term: Self-preference bias
+    meaning: 'Models tend to rate writing in their own style higher. Fix: judge with a different model, and hide which output is which.'
+    where: '`LLM_JUDGE_MODEL` (Sonnet judged the A/B), with reports shuffled and unlabelled.'
