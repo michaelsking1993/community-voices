@@ -31,6 +31,16 @@ RSpec.describe Search::Retriever do
     expect(result.hits.map(&:rank)).to eq([ 1, 2 ])
   end
 
+  it "can search only some threads" do
+    add_post("sync fails with a network error every time I open the app on my phone today", topic: sync)
+    add_post("how do I change the font size on the back of my cards in the editor window", topic: fonts)
+    embed_all
+
+    result = retriever.call("sync network error phone", max_distance: 1.0, topic_ids: [ fonts.id ])
+
+    expect(result.chunks.map { _1.post.topic }).to eq([ fonts ])
+  end
+
   it "keeps at most per_topic chunks from one thread, so other threads get a slot" do
     4.times { |i| add_post("sync error number #{i} again when syncing the collection with the server today", topic: sync) }
     add_post("sync error on the ipad when syncing the collection with the server after update", topic: fonts)
