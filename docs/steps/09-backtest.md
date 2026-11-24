@@ -44,6 +44,8 @@ Read this carefully:
 - 7 of the 13 were "partly", worth half each. Counting only full hits, the strict rate is 2 of 13, about 0.15.
 - "High" confidence did not beat "low", but only 2 high-confidence predictions could be scored. That is a hint that the stated confidence is not yet worth trusting, not a finding.
 
+**Second run, from scratch on my machine (2026-11-24).** Same 4 weeks, new reports: 10 scored, hit rate **0.45** (1 happened, 7 partly, 2 did not, 7 could not tell). Low and high confidence both scored 0.50 (2 each), medium 0.42. By basis: trend 0.38, recurring 0.50, event 0.50. So the overall rate held steady (0.42 then 0.45), while the per-confidence and per-basis splits moved around, as you'd expect from 2 to 6 predictions each. Confidence still doesn't separate hits from misses.
+
 Known limits:
 
 - **The judge.** It is the writer's own model unless `LLM_JUDGE_MODEL` is set, and a model can be kind to its own claims.

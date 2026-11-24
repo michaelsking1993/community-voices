@@ -78,4 +78,4 @@ Each report ends with predictions for next week. We can't grade those for the cu
 
 It's RAG again: each prediction becomes a search query over the following week's chunks. We keep the 5 closest posts plus that week's exact counts from SQL, and one LLM call judges each prediction: happened (1), partly (½), didn't happen (0) or can't tell, citing the posts it used. Code downgrades any "happened" or "partly" without a real citation to "can't tell".
 
-The result was a hit rate of 0.42, mostly "partly". It's only honest because there's no peeking: old reports were written only with data from before their week ended, and a spec proves it by planting a "future" post and checking it never reaches the prompt.
+The result was a hit rate of 0.42, mostly "partly", and 0.45 when I re-ran it from scratch. It's only honest because there's no peeking: old reports were written only with data from before their week ended, and a spec proves it by planting a "future" post and checking it never reaches the prompt.
