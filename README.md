@@ -41,24 +41,37 @@ docker compose up -d db
 bin/setup
 ```
 
-### Things to try
+### Using the app
 
-With Docker, put `docker compose exec app` in front of each command (for example `docker compose exec app bin/rails report:build`).
+Everything runs from the tabs at the top. A line under them always says how much forum data the app holds.
+
+- **Community report:** write a week's report and read past ones.
+- **Search:** a semantic search box over the stored posts (no LLM key needed).
+- **Evaluate:** buttons for the A/B test, the backtest and the retrieval eval, each with its cost and the data it needs.
+- **Charts:** the results of those, plus a map of every thread by meaning and which posts get retrieved most.
+- **Data:** what is stored, and "Crawl the forum" to fetch more.
+- **Flashcards:** a fun extra: the vocabulary from this project as a little flip deck. (For real memorising I'd use Anki.)
+- **How I built it:** the section of this README with that name.
+
+More on the interface in [step 12](docs/steps/12-tabbed-ui.md).
+
+<details>
+<summary>Prefer the command line?</summary>
+
+Every button has a rake task. With Docker, put `docker compose exec app` in front (for example `docker compose exec app bin/rails report:build`).
 
 | Command | What it does |
 |---|---|
 | `bin/rails 'ingest:backfill[12]'` | Crawl, chunk and embed 12 full weeks (re-runs only fetch what is new). `IngestWeekJob` also runs every Monday at 6am while the app is up |
 | `bin/rails 'retrieval:search[sync problems]'` | Search the way the report does |
 | `bin/rails retrieval:eval` | Score retrieval on 15 hand-labelled queries (needs 12 weeks) |
-| `bin/rails report:build` | Write last week's report (needs `LLM_API_KEY`), or press "Write report" on the Reports page |
+| `bin/rails report:build` | Write last week's report (needs `LLM_API_KEY`) |
 | `bin/rails 'ab:run[1]'` | A/B test last week: three reports, checks, a support judge and a blind ranking (about $0.65). Set `LLM_JUDGE_MODEL` to judge with a different model |
 | `bin/rails 'backtest:run[4]'` | Score the last 4 weeks' predictions against what happened next |
 
-The app has seven tabs: Community report (write and read reports), Search (a semantic search box over the stored posts, no LLM key needed), Evaluate (buttons for the A/B test, backtest and retrieval eval), Charts (their results), Data (what is stored, and a button to crawl more, e.g. 12 weeks for the full demo) and Flashcards (a fun extra: the vocabulary from this project as a little flip deck, from `config/flashcards.yml`. For real memorising I'd use Anki) and How I built it (the section of this README with that name). A line under the tabs always says how much forum data the app holds. [Step 12](docs/steps/12-tabbed-ui.md)
-
-The Charts page (http://localhost:3000/charts) draws the A/B test, the backtest, the embedding map and the retrieval stats from whatever is in the database.
-
 Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model` to also run the real embedding model).
+
+</details>
 
 ## How I built it: a learner's approach
 
