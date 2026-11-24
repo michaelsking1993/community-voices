@@ -37,7 +37,17 @@ Four weeks (10-19 to 11-09 reports, scored against the week after each), about $
 | basis: event | 6 | 0.42 | | |
 | basis: recurring | 2 | 0.25 | | |
 
-Read this carefully: 13 scored predictions is a small sample, so the numbers show the method works, not that the predictor is good or bad. The one real signal is that "high" confidence did **not** beat "low": the stated confidence is not yet worth trusting, which is exactly what a calibration check is for. Only 2 high-confidence predictions could be scored, and 2 more "high" ones had no evidence either way.
+Read this carefully:
+
+- 13 scored predictions is a small sample, so the numbers show the method works, not that the predictor is good or bad.
+- 5 of 18 predictions (28%) were left out as "could not tell". Counting them as misses would give 0.31.
+- 7 of the 13 were "partly", worth half each. Counting only full hits, the strict rate is 2 of 13, about 0.15.
+- "High" confidence did not beat "low", but only 2 high-confidence predictions could be scored. That is a hint that the stated confidence is not yet worth trusting, not a finding.
+
+Known limits:
+
+- **The judge.** It is the writer's own model unless `LLM_JUDGE_MODEL` is set, and a model can be kind to its own claims.
+- **Edits after the fact.** Posts and thread titles are stored as they look on the day of the crawl. A later edit ("EDIT: fixed in 26.10.1") or a renamed beta thread can reach an old week's report, including the release/beta detector, which matches on titles. Small, but not zero.
 
 ## What to understand
 

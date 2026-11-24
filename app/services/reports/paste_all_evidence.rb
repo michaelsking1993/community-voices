@@ -3,9 +3,10 @@ module Reports
   # week goes into the prompt, grouped by thread so it reads in order.
   #
   # This is the obvious alternative to RAG when a week fits in the model's
-  # context (about 50,000 tokens here). It gets the same SQL signals as the
-  # RAG arm (trend counts, releases), so predictions can be compared too;
-  # what differs is only how this week's posts reach the model.
+  # context (about 50,000 tokens of posts; about 88,000 as chunks, since
+  # chunks overlap and each repeats its header). It gets the same themes and
+  # SQL signals as the RAG arm, so predictions can be compared too; it gets
+  # no posts from earlier weeks.
   class PasteAllEvidence
     def initialize(signals: Signals.new) = @signals = signals
 
