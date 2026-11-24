@@ -54,15 +54,15 @@ Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model
 
 This was a fascinating project to me. In a personal project, I’ve been using RAG to compile a learner’s dictionary: 1) lemmatize a word to its base word, 2) find all existing dictionary entries (senses) for that base word in our dictionary, 3) pass the word, the context it was found in, and the existing dictionary entries to the model for it to determine whether one matches - if so, say which one, otherwise, give a 0, which prompts us to generate a fresh entry and associate it with the lemma.
 
-While that is RAG, there is no need for embeddings. Therefore, building this pipeline was very instructive to me.
+That is RAG, but the retrieval step is an exact lookup by lemma, so it needs no embeddings. Here I had to find posts by *meaning*, which is where vectors earn their keep. Therefore, building this pipeline was very instructive to me.
 
 Here is how I did it:
 
-Step 1 was uploading the prompt into Claude, with some blabbering from me about how I wanted to build this; essentially, I told it, “this is what we need to build. However, I want us to build this as if you’re teaching a beginner. Make me explain back every concept to you as we build it, and I won’t let us move on until I’ve thoroughly understood each piece”.
+I started by uploading the challenge description to Claude, with some blabbering from me about how I wanted to build this; essentially, I told it, “this is what we need to build. However, I want us to build this as if you’re teaching a beginner. Make me explain back every concept to you as we build it, and I won’t let us move on until I’ve thoroughly understood each piece”.
 
-And that is essentially what we did. I spent more time than I would’ve liked on this project, about a day and a half, but the vast majority of that was spent digesting these concepts and explaining them back in my own words, so I wouldn’t say they were time lost.
+And that is essentially what we did. The project took about a day and a half, most of it spent digesting these concepts and explaining them back in my own words.
 
-The result of the project was initially all in background jobs and rake tasks. I wanted to see things on the interface itself, so we spent some time getting things onto the interface.
+The result of the project was initially all in background jobs and rake tasks. I wanted to see things on the interface itself, so we spent some time getting them there: a tabbed UI with semantic search, an Evaluate page with buttons for the A/B test and backtest, and charts of the results.
 
 I’m happy with the result. I wouldn’t call myself an expert in these topics, but I was able to explain them all and therefore I’m pretty confident in being able to apply them.
 
