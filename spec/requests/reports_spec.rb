@@ -24,6 +24,12 @@ RSpec.describe "Reports", type: :request do
     expect(response.body).to include("2026-11-16 to 2026-11-22", report_path(report))
   end
 
+  it "explains what to do and shows weeks without a report" do
+    get reports_path
+
+    expect(response.body).to include("Press <strong>Write report</strong>", "No report yet")
+  end
+
   it "shows a report with citations linked to the forum and model text escaped" do
     get report_path(report)
 
