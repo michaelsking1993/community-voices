@@ -159,7 +159,7 @@ The rest of this README is laid out like a system-design answer: the problem, th
 
 ## Questions I asked, and the assumptions I made
 
-Every call is in [`DECISIONS.md`](DECISIONS.md) (56 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
+Every call is in [`DECISIONS.md`](DECISIONS.md) (58 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
 
 - **"A week" is Monday to Monday** (#27), so "last week" and "next week" are unambiguous, and partly crawled weeks are left out of counts and trends (#51).
 - **The community is its public posts.** Private messages and staff-only posts are not in the public API, so our post counts are lower than the forum's own (topic counts match within 2; [step 3](docs/steps/03-ingest.md)).
