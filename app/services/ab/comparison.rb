@@ -18,15 +18,29 @@ module Ab
 
     def row(arm)
       reports = Report.done.where(arm:, week_start: weeks).latest_first.to_a.uniq(&:week_start)
+      Row.new(arm:, weeks: reports.size, **usage(reports), **checks(reports), **judged(arm, reports))
+    end
+
+    # What each report cost to write.
+    def usage(reports)
+      { input_tokens: avg(reports.map(&:input_tokens)), output_tokens: avg(reports.map(&:output_tokens)),
+        cost_usd: avg(reports.map { _1.cost_usd&.to_f }, 3), seconds: avg(reports.map { _1.duration_ms.to_i / 1000.0 }, 1) }
+    end
+
+    # The checks run in code (Reports::Grounding).
+    def checks(reports)
+      { citations_valid: share(reports, "citations_valid", "citations"),
+        quotes_verbatim: share(reports, "quotes_verbatim", "quotes"),
+        sentences_uncited: share(reports, "sentences_uncited", "sentences") }
+    end
+
+    # What the judges said: support of cited sentences, blind scores, first places.
+    def judged(arm, reports)
       supports = Judgement.of_kind("support").where(report: reports)
       rankings = Judgement.of_kind("ranking").where(week_start: weeks)
-      Row.new(arm:, weeks: reports.size, input_tokens: avg(reports.map(&:input_tokens)), output_tokens: avg(reports.map(&:output_tokens)),
-              cost_usd: avg(reports.map { _1.cost_usd&.to_f }, 3), seconds: avg(reports.map { _1.duration_ms.to_i / 1000.0 }, 1),
-              citations_valid: share(reports, "citations_valid", "citations"), quotes_verbatim: share(reports, "quotes_verbatim", "quotes"),
-              sentences_uncited: share(reports, "sentences_uncited", "sentences"),
-              support_rate: avg(supports.filter_map { _1.data["support_rate"] }, 2),
-              scores: Ranker::DIMENSIONS.to_h { |d| [ d, avg(rankings.filter_map { _1.data.dig("scores", arm, d) }, 1) ] },
-              wins: rankings.count { _1.data["ranking"]&.first == arm })
+      { support_rate: avg(supports.filter_map { _1.data["support_rate"] }, 2),
+        scores: Ranker::DIMENSIONS.to_h { |d| [ d, avg(rankings.filter_map { _1.data.dig("scores", arm, d) }, 1) ] },
+        wins: rankings.count { _1.data["ranking"]&.first == arm } }
     end
 
     def avg(values, digits = 0)

@@ -1,6 +1,11 @@
 require "rails_helper"
 
 RSpec.describe Chunking::TextCleaner do
+  it "removes a quote inside a quote without leaving fragments" do
+    raw = "[quote=\"amy, post:3\"]\n[quote=\"bob, post:2\"]\nmy deck is gone\n[/quote]\nsame here\n[/quote]\nTry a full sync."
+    expect(described_class.call(raw)).to eq("Try a full sync.")
+  end
+
   it "removes quoted replies, which belong to another post" do
     raw = "[quote=\"bob, post:2, topic:9\"]\nmy deck is gone\n[/quote]\nTry a full sync."
     expect(described_class.call(raw)).to eq("Try a full sync.")

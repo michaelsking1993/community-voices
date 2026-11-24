@@ -8,10 +8,11 @@ namespace :ab do
       run.call(week)
     end
     puts format("\n%-10s %7s %7s %8s %6s %9s %8s %9s %8s", "arm", "in tok", "out tok", "cost $", "secs", "cites ok", "uncited", "supported", "wins")
-    Ab::Comparison.new.rows.each do |r|
+    rows = Ab::Comparison.new.rows
+    rows.each do |r|
       puts format("%-10s %7s %7s %8s %6s %9s %8s %9s %8s", r.arm, r.input_tokens, r.output_tokens, r.cost_usd, r.seconds,
                   r.citations_valid.inspect, r.sentences_uncited.inspect, r.support_rate.inspect, r.wins)
     end
-    puts "Judge scores (1-5): " + Ab::Comparison.new.rows.map { "#{_1.arm} #{_1.scores}" }.join(" | ")
+    puts "Judge scores (1-5): " + rows.map { "#{_1.arm} #{_1.scores}" }.join(" | ")
   end
 end

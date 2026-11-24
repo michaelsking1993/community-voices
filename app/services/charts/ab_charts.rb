@@ -26,7 +26,7 @@ module Charts
       end
       Chart.build(id: "ab-checks", title: "Does the report stand on its sources?",
                   caption: "Checks run in code (the first three) and by a judge (the fourth: supported counts 1, partly ½), pooled over #{weeks} week(s). \"n/a\" means the arm had nothing to check: with no posts in the prompt there is nothing to cite or quote.",
-                  traces:, layout: { yaxis: { title: "%", range: [ 0, 105 ] }, barmode: "group" })
+                  traces:, layout: { yaxis: { title: "%", range: [ 0, 115 ] }, barmode: "group" })
     end
 
     def cost(rows)
