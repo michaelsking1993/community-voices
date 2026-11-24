@@ -1,33 +1,16 @@
 <% content_for(:title, "Evaluate · Community Voices") %>
 <h1>Evaluate</h1>
-<p class="muted">The pipeline is: <strong>crawl</strong> the forum (the data), <strong>report</strong> on it with an LLM (the Community report tab), then <strong>evaluate</strong> how good that is. Evaluation is not automatic: press a button when you want fresh numbers. Results appear on the <%= link_to "Charts", charts_path %> tab.</p>
+<p>Three ways to check how good the reports are. Nothing here runs by itself: press a button when you want fresh numbers (for example after changing the retriever or the prompt). The results are drawn on the <%= link_to "Charts", charts_path %> tab.</p>
 
-<% if @pending %>
-  <p class="notice">A task is running. <%= link_to "Refresh", evaluation_path %> to see its result.</p>
-<% end %>
+<%= refresh_while(@last.values.any? { _1.active? && _1.kind != "ingest" }) %>
 <% unless @configured %>
-  <p class="notice">Set <code>LLM_API_KEY</code> in <code>.env</code> (see <code>.env.example</code>) to run the A/B test and the backtest. Crawling and the retrieval eval need no key.</p>
+  <p class="notice">Set <code>LLM_API_KEY</code> in <code>.env</code> (see <code>.env.example</code>) and restart to run the A/B test and the backtest. The retrieval eval needs no key.</p>
 <% end %>
 
 <% @kinds.each do |kind| %>
-  <% last = @last[kind.key] %>
   <section>
-    <h2><%= kind.label %></h2>
+    <h2><%= kind.label.delete_prefix("Run ").upcase_first %></h2>
     <p><%= kind.blurb %></p>
-    <p class="muted">Cost: <%= kind.cost %></p>
-    <%= form_with url: evaluation_path, class: "search-form" do |f| %>
-      <%= f.hidden_field :kind, value: kind.key %>
-      <% if kind.weeks %>
-        <%= f.label :weeks, "Weeks", for: "weeks_#{kind.key}" %>
-        <%= f.number_field :weeks, id: "weeks_#{kind.key}", value: last&.weeks || [ kind.weeks.begin, kind.weeks.end ].min, min: kind.weeks.begin, max: kind.weeks.end, style: "width: 5rem" %>
-      <% end %>
-      <%= f.submit "Run #{kind.label.downcase}", disabled: (kind.needs_llm && !@configured) || last&.active?,
-                   data: { turbo_confirm: ("This calls the LLM and costs money (#{kind.cost}). Run it?" if kind.needs_llm) } %>
-    <% end %>
-    <% if last %>
-      <p class="muted">Last run: <%= last.status %> · <%= l(last.created_at, format: :short) %><%= " · #{last.weeks} weeks" if last.weeks %></p>
-      <% if last.error %><p class="notice"><%= last.error %></p><% end %>
-      <% if last.summary %><pre><%= last.summary %></pre><% end %>
-    <% end %>
+    <%= render "shared/job_form", kind:, last: @last[kind.key], configured: @configured, full_weeks: @full_weeks %>
   </section>
 <% end %>

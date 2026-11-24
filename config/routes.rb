@@ -12,7 +12,9 @@ Rails.application.routes.draw do
   resources :reports, only: %i[index show create]
   resources :charts, only: :index
   resource :search, only: :show
-  resource :evaluation, only: %i[show create]
+  resource :data, only: :show
+  resource :evaluation, only: :show
+  resources :job_runs, only: :create
   resource :flashcards, only: :show
   root "reports#index"
 end

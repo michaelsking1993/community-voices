@@ -1,0 +1,21 @@
+<%# A button for one long task (JobRun::Kind), why it is disabled if it is, and its last result. %>
+<% last = local_assigns[:last] %>
+<% blocked = if kind.needs_llm && !configured then "Needs LLM_API_KEY in .env." elsif full_weeks < kind.min_full_weeks then "Needs #{pluralize(kind.min_full_weeks, "full week")} of data; you have #{full_weeks}. #{link_to "Crawl more", data_path}." end %>
+<%= form_with url: job_runs_path, class: "run-form" do |f| %>
+  <%= f.hidden_field :kind, value: kind.key %>
+  <% if kind.weeks %>
+    <%= f.label :weeks, (kind.key == "ingest" ? "Full weeks back" : "Weeks to test"), for: "weeks_#{kind.key}" %>
+    <%= f.number_field :weeks, id: "weeks_#{kind.key}", value: kind.default_weeks, min: kind.weeks.begin, max: kind.weeks.end, class: "weeks" %>
+  <% end %>
+  <%= f.submit kind.label, class: "button", disabled: blocked.present? || last&.active?,
+               data: { turbo_confirm: ("This calls the LLM and costs money (#{kind.cost}) Run it?" if kind.needs_llm) } %>
+  <% if blocked %><span class="muted"><%= sanitize blocked, tags: %w[a], attributes: %w[href] %></span><% end %>
+<% end %>
+<p class="muted">Cost: <%= kind.cost %></p>
+<% if last %>
+  <p class="muted">Last run: <strong><%= last.status %></strong> · started <%= l(last.created_at, format: :short) %><%= " · #{pluralize(last.weeks, "week")}" if last.weeks %></p>
+  <% if last.error %><p class="notice"><%= last.error %></p><% end %>
+  <% if last.summary %>
+    <details><summary>Output</summary><pre><%= last.summary %></pre></details>
+  <% end %>
+<% end %>

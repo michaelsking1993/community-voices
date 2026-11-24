@@ -1,40 +1,45 @@
 <% content_for(:title, "Reports · Community Voices") %>
 <h1>Community Voices</h1>
-<p class="muted">Weekly reports on the <a href="https://forums.ankiweb.net">Anki forums</a>, written by an LLM from retrieved, cited posts.</p>
+<p>A weekly report on what the <a href="https://forums.ankiweb.net">Anki forums</a> talked about, and what they will likely talk about next week. An LLM writes it from forum posts that the app retrieves by meaning (RAG), and every claim links back to the post it came from.</p>
 
-<ol class="muted">
-  <li>Each row is one full week of forum posts stored in the database.</li>
-  <li>Press <strong>Write report</strong> on a week. The LLM reads the posts it retrieves, writes what the community talked about plus predictions for the next week, and cites every claim. It takes about a minute and costs roughly $0.10 to $0.15.</li>
-  <li>Reload the page: the finished report appears as a link in the Reports column. Pressing the button again writes a new one next to it.</li>
-</ol>
-<p class="muted">Want to explore the posts yourself? Use <%= link_to "Search", search_path %>. To see how good the reports are, use <%= link_to "Evaluate", evaluation_path %>.</p>
+<%= refresh_while(@writing || flash[:notice].present?) %>
 
-<% unless @configured %>
-  <p class="notice">Set your LLM key in <code>.env</code> (see <code>.env.example</code>) to write new reports. Saved reports below still work.</p>
+<% if !@configured %>
+  <p class="notice">To write reports, set <code>LLM_API_KEY</code> in <code>.env</code> (see <code>.env.example</code>) and restart the app. Reports already written still open, and <%= link_to "Search", search_path %> works without a key.</p>
+<% elsif @weeks.empty? %>
+  <p class="notice">No complete weeks are stored yet. <%= link_to "Crawl the forum", data_path %> first.</p>
+<% else %>
+  <p class="muted">Pick a week and press <strong>Write report</strong>. It takes about a minute and costs roughly $0.10 to $0.15. The report shows up in the Reports column when it is done.</p>
 <% end %>
 
-<% if @weeks.empty? %>
-  <p class="notice">No complete weeks are stored yet. Crawl the forum from the <%= link_to "Evaluate", evaluation_path %> tab, or run <code>bin/rails 'ingest:backfill[2]'</code>.</p>
+<% if @weeks.any? %>
+  <table>
+    <thead><tr><th>Week</th><th>Posts</th><th>Reports</th><th></th></tr></thead>
+    <tbody>
+      <% @weeks.each do |row| %>
+        <% week = row.week %>
+        <tr>
+          <td><%= week %></td>
+          <td><%= row.posts %></td>
+          <td>
+            <% reports = Array(@reports[week.start]) %>
+            <% if reports.empty? %><span class="muted">None yet</span><% end %>
+            <% reports.each do |report| %>
+              <% label = report_label(report) %>
+              <% case report.status %>
+              <% when "done" %>
+                <%= link_to label, report_path(report) %>
+              <% when "pending" %>
+                <span class="muted"><%= label %>: writing…</span>
+              <% else %>
+                <span class="muted"><%= label %>: failed</span> <small class="muted"><%= report.error.to_s.truncate(120) %></small>
+              <% end %><br>
+            <% end %>
+          </td>
+          <td><%= button_to "Write report", reports_path(week: week.to_param), class: "button", disabled: !@configured %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <p class="muted">Reports marked "A/B" were written by the <%= link_to "A/B test", evaluation_path %> to compare against RAG; open them side by side to see the difference.</p>
 <% end %>
-
-<table>
-  <thead><tr><th>Week</th><th>Reports</th><th></th></tr></thead>
-  <tbody>
-    <% @weeks.each do |week| %>
-      <tr>
-        <td><%= week %></td>
-        <td>
-          <% if @reports[week.start].blank? %><span class="muted">No report yet</span><% end %>
-          <% Array(@reports[week.start]).each do |report| %>
-            <% if report.status == "done" %>
-              <%= link_to "#{report.arm} · #{l(report.created_at, format: :short)}", report_path(report) %>
-            <% else %>
-              <span class="muted" title="<%= report.error %>"><%= report.arm %> · <%= report.status %></span>
-            <% end %><br>
-          <% end %>
-        </td>
-        <td><%= button_to "Write report", reports_path(week: week.to_param), disabled: !@configured %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>

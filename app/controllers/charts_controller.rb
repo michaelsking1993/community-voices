@@ -5,11 +5,11 @@ class ChartsController < ApplicationController
     @retrieval = Charts::RetrievalCharts.new
     @sections = [
       Section.new("A/B test: no context vs paste the whole week vs RAG", Charts::AbCharts.new.call,
-                  "No A/B results yet. Run bin/rails 'ab:run[1]', or read docs/samples/ for a stored run."),
+                  "No A/B results yet. Run the A/B test on the Evaluate tab, or read docs/samples/ for a stored run."),
       Section.new("Backtest: did last week's predictions come true?", Charts::BacktestCharts.new.call,
-                  "No backtest yet. Run bin/rails 'backtest:run[4]' (needs at least 6 full weeks: BACKFILL_WEEKS=12)."),
-      Section.new("Embedding map", embedding_map, "No embeddings yet. Run bin/rails ingest:backfill."),
-      Section.new("Retrieval stats", @retrieval.call, "No retrievals logged yet. Write a report first.")
+                  "No backtest yet. Run the backtest on the Evaluate tab (it needs at least 6 full weeks of data)."),
+      Section.new("Embedding map", embedding_map, "No embeddings yet. Crawl the forum on the Data tab."),
+      Section.new("Retrieval stats", @retrieval.call, "No retrievals logged yet. Write a report or run a search first.")
     ]
   end
 

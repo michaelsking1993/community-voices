@@ -27,7 +27,15 @@ RSpec.describe "Reports", type: :request do
   it "explains what to do and shows weeks without a report" do
     get reports_path
 
-    expect(response.body).to include("Press <strong>Write report</strong>", "No report yet")
+    expect(response.body).to include("press <strong>Write report</strong>", "None yet")
+  end
+
+  it "labels A/B reports and refreshes while one is being written" do
+    Report.create!(week_start: Date.new(2026, 11, 16), arm: "none", status: "done", content: {})
+    Report.create!(week_start: Date.new(2026, 11, 16), arm: "rag", status: "pending")
+    get reports_path
+
+    expect(response.body).to include("A/B: no context", "Report · ", "writing…", 'http-equiv="refresh"')
   end
 
   it "shows a report with citations linked to the forum and model text escaped" do
