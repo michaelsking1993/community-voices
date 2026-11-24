@@ -34,4 +34,5 @@ Read in this order. Each page is about one screen.
 - [samples/](samples): one week's report written three ways, and how they compared
 
 - [DECISIONS.md](../DECISIONS.md): every call, its options and trade-off
+- [my-explanation.md](my-explanation.md): the whole pipeline in my own words, written once I understood every piece
 - [notes.md](notes.md): running notes for the README and interview

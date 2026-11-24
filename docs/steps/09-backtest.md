@@ -61,7 +61,7 @@ Known limits:
 2. High-confidence predictions scored lower than low ones. Name two reasons that could be true besides "the model is bad".
 3. Why does the backtest reuse stored reports rather than re-writing them?
 
-## What I would do next
+## Possible next steps
 
 - Score more weeks (each costs about $0.15 for the report) before drawing conclusions.
 - Compare against a dumb baseline ("next week looks like this week") to see whether the LLM adds anything.

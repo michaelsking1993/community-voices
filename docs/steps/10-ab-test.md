@@ -91,7 +91,7 @@ Blind judge: coverage / accuracy / specificity / usefulness, and rank.
 2. Why are the reports shuffled and stripped of citation ids before the ranker sees them?
 3. What would you change in the test to be more sure of the result?
 
-## What I would do next
+## Possible next steps
 
 - More weeks, ranked in two orders each, to cancel position bias.
 - A larger retrieval budget for RAG to see where it catches up with paste-all.

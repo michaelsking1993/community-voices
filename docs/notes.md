@@ -1,11 +1,17 @@
 # Running notes
 
-My notes for the README and the interview, in my own words. The AI assistant adds a short entry at the end of each step; I edit them.
+Short notes from each step, drafted by Claude as we went. For the whole pipeline in my own words, see [my-explanation.md](my-explanation.md).
 
 ## Step 1: scaffold
 
 - One database does two jobs: normal tables for posts and a `vector` column for embeddings. That is the whole "vector DB" for this project.
 - Jobs run on Solid Queue, which also lives in Postgres. No Redis.
+
+## Step 2: concepts lab
+
+- Before any app code: I guessed how similar six forum-style sentences were, then we embedded them with the app's model and measured.
+- My ranking was right ("make the card text bigger" and "change the font size" closest), but I guessed 0.8 for the two "lost data on sync" sentences and it measured 0.37.
+- Lesson: absolute scores depend on the model, so never pick a threshold by feel. Rank by distance, and only set a cut-off after measuring on real queries.
 
 ## Step 3: ingest
 
@@ -63,7 +69,13 @@ My notes for the README and the interview, in my own words. The AI assistant add
 - Honest framing: RAG wins on cost and scale; on quality it now nearly matches pasting, while a week still fits in the prompt.
 - No context: nothing to cite, judge gave 1/5 on coverage.
 
+- Fresh-week check (2026-11-24, my machine): the fix was tuned on 11-16, so I ran 11-09 too. Paste-all ranked first in every judged run and RAG second; RAG's coverage was 4 on the fresh week. Re-running 11-16 from scratch moved RAG's scores by 1 to 2 points, so the judge is noisy and the ranking is the steady signal.
+
 ## Step 11: charts
 
 - Plotly basic bundle vendored, one Stimulus controller; server describes figures. PCA map of 650 threads; retrieval stats from the retrieval log.
 
+## Step 12: tabbed UI
+
+- Everything a reviewer needs is in the interface, not only rake tasks: Community report, Search, Evaluate (buttons for the A/B test, backtest and retrieval eval), Charts, Data (crawl more), Flashcards and How I built it.
+- Search is the retriever with a text box: the same vectors the report uses, no LLM key needed.

@@ -23,10 +23,10 @@ docker compose up
 3. In development, Solid Queue uses its own database (`community_voices_development_queue`), and `bin/dev` runs it inside Puma, so the weekly schedule fires locally too.
 4. `spec/db/pgvector_spec.rb` checks the extension is on and that cosine distance behaves: same direction = 0, unrelated = 1.
 
-## What I learned
+## Key takeaways
 
 pgvector is a Postgres extension that adds one column type (a fixed-length list of floats) and a few operators to compare them, plus index types (HNSW, IVFFlat) that make "find the nearest vectors" fast. Everything else stays normal Postgres: joins, `WHERE` clauses, transactions, backups.
 
-## What I would do next
+## Possible next steps
 
 Nothing deferred here. Next is step 3: crawl the forum into `topics` and `posts`.

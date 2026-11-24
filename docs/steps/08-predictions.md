@@ -48,11 +48,11 @@ The AnkiMobile 26.10 release (2026-11-09) shows as a jump from about 4 posts a w
 
 _Live predictions: to do once the API key is set; the backtest in step 9 scores them._
 
-## What I learned
+## Key takeaways
 
 Predicting "what people will talk about" is mostly reading signals that already exist: a spike decaying after a release, a steady background problem, a beta that will become a release. Retrieval's job here is to find those signals in history; the LLM's job is to weigh them and say how sure it is. Making predictions checkable and forbidding future data is what turns them from a guess into something you can score.
 
-## What I would do next
+## Possible next steps
 
 - Track themes across weeks by matching centroids, so trends are per theme rather than "posts near this week's centre".
 - Use Discourse's own "latest" ordering and the release calendar (GitHub tags) as extra event signals.

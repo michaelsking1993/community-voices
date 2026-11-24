@@ -52,7 +52,7 @@ Michael's first look found the UI confusing, so we went through it page by page:
 1. Why does search work with no API key when "Write report" does not?
 2. Search a made-up phrase. Why do you get a message rather than the nearest bad match?
 
-## What I would do next
+## Possible next steps
 
 - Filters for category and date range (the retriever already takes a window).
 - Hybrid search: add keyword matching for exact terms such as error codes.

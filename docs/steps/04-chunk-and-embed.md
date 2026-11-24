@@ -46,7 +46,7 @@ Yes, and note the first one never says "sync problems". It says "maintain the co
 
 It also shows the next problem: **four of five hits come from one thread.** Step 5 (retrieval) needs diversity, so one long thread cannot crowd out the rest.
 
-## What I learned
+## Key takeaways
 
 An embedding turns text into a point in a 384-dimension space where distance means difference in meaning. Chunking decides *what* each point represents: too big and it is a blur of topics (and gets truncated), too small and it loses context. The header is a cheap way to put context back. The content hash makes the pipeline incremental, which is how you keep "overly large amounts of data" cheap: you only ever pay to embed what is new.
 
@@ -61,7 +61,7 @@ Reviewing this step, I asked: if we switched embedding models, how would the app
 
 Themes and the map average whatever vectors are stored; between switching models and the next embed run they could mix maps. Running the Embedder right after a switch closes that window. (DECISIONS #54)
 
-## What I would do next
+## Possible next steps
 
 - Chunks with many long words or URLs can exceed the model's ~256 word-piece limit, and the model then ignores the tail. A token-based splitter (using the model's own tokenizer) would be exact. Deferred: rare in forum prose, and the overlap means the tail usually starts the next chunk.
 - Split on sentence or paragraph boundaries instead of a fixed word count.
