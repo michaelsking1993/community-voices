@@ -50,6 +50,7 @@ RSpec.describe "Reports", type: :request do
     get report_path(report)
 
     expect(response.body).to include("Lost decks", 'href="https://forums.ankiweb.net/t/x/1/1"', "3 threads · 9 posts · 4 people", "2 of 2")
+    expect(response.body).to include('target="_blank" rel="noopener"')
     expect(response.body).not_to include("<script>x</script>")
   end
 
