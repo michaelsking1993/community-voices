@@ -13,7 +13,7 @@ RSpec.describe Reports::Signals do
   before do
     add(1, "Toolbar gone", text, Time.zone.parse("2026-11-18"))
     add(1, "Toolbar gone", "#{text} as well", Time.zone.parse("2026-11-19"))
-    add(2, "Toolbar missing", text, Time.zone.parse("2026-11-10"))
+    add(2, "Toolbar missing", text, Time.zone.parse("2026-11-09 03:00"))
     add(3, "Anki 26.11 Beta 1", "please test the new beta build and report any problems you find with the editor", Time.zone.parse("2026-11-17"), category: "Anki › Beta Testing")
     add(4, "Anki 26.12 Beta 1", "a future beta that must not leak into a report for the week of the sixteenth of november", Time.zone.parse("2026-11-25"), category: "Anki › Beta Testing")
     Embeddings::Embedder.new(model:).call
@@ -28,7 +28,14 @@ RSpec.describe Reports::Signals do
   it "counts posts close to each theme per week, oldest first, ending with the report's week" do
     stub_const("#{described_class}::TREND_DISTANCE", 0.2)
 
-    expect(described_class.new.trend_line(week, theme)).to eq("Theme 1 (Toolbar gone): 0, 0, 0, 0, 1, 2")
+    expect(described_class.new.trend_line(week, theme)).to eq("Theme 1 (Toolbar gone): 1, 2")
+  end
+
+  it "leaves out weeks before the data starts instead of showing them as zeros" do
+    stub_const("#{described_class}::TREND_DISTANCE", 0.2)
+    coverage = Ingest::Coverage.new(oldest_post_at: Time.zone.parse("2026-10-19 01:00"))
+
+    expect(described_class.new(coverage:).trend_line(week, theme)).to eq("Theme 1 (Toolbar gone): 0, 0, 0, 1, 2")
   end
 
   it "adds recent beta and release threads to the evidence, and nothing from after the week" do

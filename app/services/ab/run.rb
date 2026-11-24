@@ -1,10 +1,10 @@
 module Ab
-  # The A/B test for one week: write the report three ways (same prompt
-  # shape, same schema, same model; only the context differs), check each
+  # The A/B test for one week: write the report three ways (same rules,
+  # same schema, same model; only the context differs), check each
   # in code, have a judge check support and rank them blind.
   #
   #   none       no posts at all: what you get by just asking an LLM
-  #   paste_all  every post of the week in the prompt, no search
+  #   paste_all  every post of the week in the prompt once: no search, no themes
   #   rag        themes, then retrieval per theme (the app's own method)
   #
   # Stored reports and judgements are reused, so re-running is free.
@@ -32,7 +32,7 @@ module Ab
 
     def default_builders(llm)
       { "rag" => Reports::Builder.new(llm:),
-        "paste_all" => Reports::Builder.new(llm:, arm: "paste_all", evidence_source: Reports::PasteAllEvidence.new),
+        "paste_all" => Reports::Builder.new(llm:, arm: "paste_all", evidence_source: Reports::PasteAllEvidence.new, themes: false),
         "none" => Reports::Builder.new(llm:, arm: "none", evidence_source: Reports::NoEvidence.new, grounded: false) }
     end
   end

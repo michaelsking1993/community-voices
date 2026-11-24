@@ -66,7 +66,7 @@ RSpec.describe "Chart data" do
       figure, = described_class.new.call(weeks: 4)
 
       expect(figure.traces.sum { _1[:x].size }).to eq(4)
-      expect(figure.traces.map { _1[:name] }).to contain_exactly("Anki", "AnkiMobile")
+      expect(figure.traces.map { _1[:name] }).to contain_exactly("Anki › Syncing", "AnkiMobile › Help")
     end
   end
 end

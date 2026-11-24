@@ -8,7 +8,7 @@ module Charts
   # deterministic, needs no library, and is enough to see clusters.
   class EmbeddingMap
     MAX_THREADS = 1500
-    TOP_CATEGORIES = 7
+    TOP_CATEGORIES = 8
 
     def call(weeks: 12)
       rows = thread_vectors(weeks)
@@ -16,7 +16,7 @@ module Charts
 
       points = Pca.project(rows.map(&:last).map { Themes::KMeans.normalize(_1) })
       [ Chart.build(id: "embedding-map", title: "Map of the forum's threads",
-                    caption: "#{rows.size} threads from the last #{weeks} weeks, each placed by the meaning of its posts (384 numbers flattened to 2 with PCA). Closer means more similar; colours are the forum's own categories. Hover for the title.",
+                    caption: "#{rows.size} threads from the last #{weeks} weeks, each placed by the meaning of its posts (384 numbers flattened to 2 with PCA). Closer means more similar; colours are the forum's own categories (the biggest #{TOP_CATEGORIES}; the rest are \"Other\"). Hover for the title.",
                     traces: traces(rows, points), layout: { xaxis: { visible: false }, yaxis: { visible: false }, hovermode: "closest", height: 520 }) ]
     end
 
@@ -33,12 +33,14 @@ module Charts
     end
 
     def traces(rows, points)
-      names = rows.map { _1.first.category_name.to_s.split("›").first.to_s.strip.presence || "Other" }
+      names = rows.map { _1.first.category_name.presence || "Other" } # "Anki › Help": the top level alone is mostly "Anki"
       top = names.tally.max_by(TOP_CATEGORIES, &:last).map(&:first)
       names.each_with_index.group_by { |name, _| top.include?(name) ? name : "Other" }.map do |name, members|
         indexes = members.map(&:last)
-        { type: "scatter", mode: "markers", name:, x: indexes.map { points[_1][0].round(4) }, y: indexes.map { points[_1][1].round(4) },
-          text: indexes.map { rows[_1].first.title.truncate(80) }, hovertemplate: "%{text}<extra>#{name}</extra>", marker: { size: 7, opacity: 0.75 } }
+        { type: "scatter", mode: "markers", name:,
+          x: indexes.map { points[_1][0].round(4) }, y: indexes.map { points[_1][1].round(4) },
+          text: indexes.map { rows[_1].first.title.truncate(80) }, hovertemplate: "%{text}<extra>#{name}</extra>",
+          marker: { size: 7, opacity: 0.75 } }
       end
     end
   end

@@ -2,7 +2,8 @@ module Reports
   # What the RAG arm knows about next week, beyond this week's posts:
   #
   #   trends   for each theme, posts per week over the last 6 weeks whose
-  #            chunks sit close to the theme's centre (vectors + SQL)
+  #            chunks sit close to the theme's centre (vectors + SQL);
+  #            weeks the database does not hold in full are left out
   #   events   betas, releases and announcements active in the last two
   #            weeks, added to the evidence so predictions can cite them
   #
@@ -15,14 +16,18 @@ module Reports
     EVENT_CATEGORIES = /Beta Testing|Announcements/
     EVENT_TITLES = /\b(release|released|beta)\b/i # not "update": too many "broke after update" help threads
 
+    def initialize(coverage: Ingest::Coverage.new) = @coverage = coverage
+
     def call(week, themes, evidence)
       evidence.signals = themes.map { trend_line(week, _1) }
       events(week).each { |chunk| evidence.add(chunk, theme: 0) }
       evidence
     end
 
+    # Weeks before the data starts are left out, not shown as zeros.
     def trend_line(week, theme)
-      counts = (TREND_WEEKS - 1).downto(0).map { |back| close_posts(week.previous(back), theme.centroid) }
+      weeks = (TREND_WEEKS - 1).downto(1).map { week.previous(_1) }.select { @coverage.full?(_1) } << week
+      counts = weeks.map { |w| close_posts(w, theme.centroid) }
       "Theme #{theme.position} (#{theme.label}): #{counts.join(", ")}"
     end
 

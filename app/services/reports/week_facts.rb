@@ -4,9 +4,12 @@ module Reports
   class WeekFacts
     Counts = Data.define(:posts, :threads, :people)
 
+    def initialize(coverage: Ingest::Coverage.new) = @coverage = coverage
+
+    # The baseline averages only earlier weeks the database holds in full.
     def call(week, baseline_weeks: 4)
       current = counts(week)
-      earlier = (1..baseline_weeks).map { counts(week.previous(_1)) }.reject { _1.posts.zero? }
+      earlier = (1..baseline_weeks).map { week.previous(_1) }.select { @coverage.full?(_1) }.map { counts(_1) }
       { week: current, baseline: average(earlier), baseline_weeks: earlier.size }
     end
 

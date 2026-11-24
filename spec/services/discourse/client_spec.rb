@@ -26,9 +26,22 @@ RSpec.describe Discourse::Client do
       expect(client.latest_posts).to eq([])
     end
 
-    it "raises on other errors" do
-      stub_request(:get, "#{DiscourseHelpers::BASE}/posts.json").to_return(status: 500)
+    it "retries server errors and timeouts, then succeeds" do
+      stub_request(:get, "#{DiscourseHelpers::BASE}/posts.json")
+        .to_return({ status: 502 }).then.to_timeout.then.to_return(json_response({ "latest_posts" => [] }))
+      expect(client.latest_posts).to eq([])
+    end
+
+    it "gives up after #{described_class::MAX_RETRIES} retries" do
+      stub = stub_request(:get, "#{DiscourseHelpers::BASE}/posts.json").to_return(status: 500)
       expect { client.latest_posts }.to raise_error(Discourse::Client::Error, /HTTP 500/)
+      expect(stub).to have_been_requested.times(described_class::MAX_RETRIES + 1)
+    end
+
+    it "raises at once on errors a retry cannot fix" do
+      stub = stub_request(:get, "#{DiscourseHelpers::BASE}/posts.json").to_return(status: 404)
+      expect { client.latest_posts }.to raise_error(Discourse::Client::Error, /HTTP 404/)
+      expect(stub).to have_been_requested.once
     end
   end
 

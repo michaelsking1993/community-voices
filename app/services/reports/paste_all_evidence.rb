@@ -1,21 +1,19 @@
 module Reports
-  # The paste-all arm's evidence: no search at all, every chunk of the
-  # week goes into the prompt, grouped by thread so it reads in order.
+  # The paste-all arm's evidence: no search, no themes. Every post of the
+  # week goes into the prompt once, cleaned the same way chunks are (quotes,
+  # images and code removed), grouped by thread so each title appears once.
   #
   # This is the obvious alternative to RAG when a week fits in the model's
-  # context (about 50,000 tokens of posts; about 88,000 as chunks, since
-  # chunks overlap and each repeats its header). It gets the same themes and
-  # SQL signals as the RAG arm, so predictions can be compared too; it gets
-  # no posts from earlier weeks.
+  # context (about 50,000 tokens). Posts, not chunks: chunks overlap and
+  # repeat a header, which would inflate this arm's cost.
   class PasteAllEvidence
-    def initialize(signals: Signals.new) = @signals = signals
-
-    def call(week, themes)
+    def call(week, _themes)
       evidence = Evidence.new
-      Chunk.joins(:post).where(posts: { posted_at: week.range }).preload(post: :topic)
-           .order("posts.topic_id", "posts.posted_at", :position)
-           .each { evidence.add(_1, theme: Evidence::WHOLE_WEEK) }
-      @signals.call(week, themes, evidence)
+      Post.posted_between(week.range.begin, week.range.end).preload(:topic).order(:topic_id, :posted_at).each do |post|
+        text = Chunking::TextCleaner.call(post.raw)
+        evidence.add_post(post, text, theme: Evidence::WHOLE_WEEK) if text.present?
+      end
+      evidence
     end
   end
 end

@@ -2,7 +2,8 @@
 <h1>Charts</h1>
 <p class="muted">Everything here is drawn from the database. Figures are described by the server and drawn by <a href="https://plotly.com/javascript/">Plotly</a> through a small Stimulus controller.</p>
 
-<% @sections.each do |title, charts, empty| %>
+<% @sections.each do |section| %>
+  <% title, charts, empty = section.title, section.charts, section.empty %>
   <h2><%= title %></h2>
   <% if charts.empty? %>
     <p class="muted"><%= empty %></p>

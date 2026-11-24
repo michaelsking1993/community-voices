@@ -38,6 +38,15 @@ module Reports
       Do not predict anything you have no signal for. If there is no signal for next week, return no predictions.
     PROMPT
 
+    TREND_INTRO = "Posts per week close to each theme (approximate: a trend signal, not an exact count), " \
+                  "oldest first, the last number is this week:".freeze
+
+    # The paste-all arm gets no themes, so it finds its own topics.
+    NO_THEMES = <<~PROMPT.freeze
+
+      No themes are given for this report. Find the 3 to 6 main topics of the week yourself from the posts, biggest first, write one section for each instead of one per theme, and use theme 0 for every section and prediction.
+    PROMPT
+
     # The no-context arm: the same job with nothing attached, i.e. what you
     # get from just asking an LLM. Same JSON shape, so the same checks run.
     SYSTEM_PLAIN = <<~PROMPT.freeze
@@ -64,23 +73,25 @@ module Reports
                              sections: { type: "array", items: SECTION }, predictions: { type: "array", items: PREDICTION } } }.freeze
 
     # grounded: false is the no-context arm: no themes, counts or evidence,
-    # just the week's dates.
-    def initialize(llm: Llm.client, evidence_source: RagEvidence.new, theme_finder: nil, arm: "rag", grounded: true)
+    # just the week's dates. themes: false is the paste-all arm: the week's
+    # counts and posts, but none of the RAG pipeline's themes or signals.
+    def initialize(llm: Llm.client, evidence_source: RagEvidence.new, theme_finder: nil, arm: "rag", grounded: true, themes: grounded)
       @llm = llm
       @evidence_source = evidence_source
       @theme_finder = theme_finder || Themes::Finder.new(llm:)
       @arm = arm
       @grounded = grounded
+      @use_themes = themes
     end
 
     def call(week)
       report = Report.create!(week_start: week.start, arm: @arm)
-      themes = @grounded ? themes_for(week) : []
+      themes = @use_themes ? themes_for(week) : []
       evidence = @evidence_source.call(week, themes)
       Retrieval.where(id: Array(@evidence_source.try(:retrievals)).map(&:id)).update_all(report_id: report.id)
-      covered = themes.select { |t| evidence.whole_week.any? || evidence.for_theme(t.position).any? }
+      covered = themes.select { |t| evidence.for_theme(t.position).any? }
 
-      content, response = @grounded && covered.empty? ? [ not_enough_evidence, nil ] : write(week, covered, evidence)
+      content, response = nothing_to_cite?(covered, evidence) ? [ not_enough_evidence, nil ] : write(week, covered, evidence)
       content = content.merge("themes" => covered.map { snapshot(_1) },
                               "thin_themes" => (themes - covered).map { snapshot(_1) })
       save(report, content, evidence, response)
@@ -91,6 +102,12 @@ module Reports
 
     private
 
+    def nothing_to_cite?(covered, evidence)
+      return false unless @grounded
+
+      @use_themes ? covered.empty? : evidence.empty?
+    end
+
     def themes_for(week)
       themes = Theme.for_week(week).to_a
       themes = @theme_finder.call(week) if themes.empty?
@@ -98,47 +115,59 @@ module Reports
     end
 
     def write(week, themes, evidence)
-      response = @llm.json(system: @grounded ? SYSTEM : SYSTEM_PLAIN, prompt: prompt(week, themes, evidence), schema: SCHEMA)
+      response = @llm.json(system:, prompt: prompt(week, themes, evidence), schema: SCHEMA)
       [ response.data, response ]
+    end
+
+    def system
+      return SYSTEM_PLAIN unless @grounded
+
+      @use_themes ? SYSTEM : SYSTEM + NO_THEMES
     end
 
     def prompt(week, themes, evidence)
       return "Week: #{week}" unless @grounded
 
       facts = WeekFacts.new
-      [ "Week: #{week}", facts.to_prompt(facts.call(week)), "# Themes, biggest first",
-        *themes.map { theme_block(_1, evidence) }, *whole_week_block(evidence), *signals_block(week, evidence) ].join("\n\n")
+      [ "Week: #{week}", facts.to_prompt(facts.call(week)), *themes_block(themes, evidence),
+        *whole_week_block(evidence), *signals_block(week, evidence) ].join("\n\n")
     end
 
-    # The paste-all arm: every post of the week, unsorted, after the themes.
+    def themes_block(themes, evidence)
+      themes.any? ? [ "# Themes, biggest first", *themes.map { theme_block(_1, evidence) } ] : []
+    end
+
+    # The paste-all arm: every post of the week once, each thread's title once.
     def whole_week_block(evidence)
-      posts = evidence.whole_week
-      posts.any? ? [ "# Every post from this week, grouped by thread", *posts.map(&:to_prompt) ] : []
+      threads = evidence.whole_week.chunk_while { _1.thread_url == _2.thread_url }
+      return [] if threads.none?
+
+      [ "# Every post from this week, grouped by thread", *threads.map { thread_block(_1) } ]
+    end
+
+    def thread_block(items)
+      first = items.first
+      [ "## \"#{first.title}\" · #{first.category}", *items.map { "[#{_1.id}] #{_1.date}\n#{_1.text}" } ].join("\n\n")
     end
 
     def signals_block(week, evidence)
       events = evidence.for_theme(0)
       lines = [ "# Signals for next week (#{week.next})" ]
-      if evidence.signals.any?
-        lines << "Posts per week close to each theme (approximate: a trend signal, not an exact count), oldest first, the last number is this week:\n#{evidence.signals.join("\n")}"
-      end
+      lines << "#{TREND_INTRO}\n#{evidence.signals.join("\n")}" if evidence.signals.any?
       lines.push("Releases, betas and announcements active in the last two weeks:", *events.map(&:to_prompt)) if events.any?
       lines.size > 1 ? lines : []
     end
 
     def theme_block(theme, evidence)
       history = evidence.for_theme(theme.position, history: true)
-      [ "## Theme #{theme.position}: #{theme.label} [#{theme.kind}] (#{theme.topic_count} threads, #{theme.post_count} posts, #{theme.author_count} people)",
+      counts = "#{theme.topic_count} threads, #{theme.post_count} posts, #{theme.author_count} people"
+      [ "## Theme #{theme.position}: #{theme.label} [#{theme.kind}] (#{counts})",
         "What the clustering step saw: #{theme.summary}",
         *evidence_lines(theme, evidence),
         *([ "Similar posts from earlier weeks (context):", *history.map(&:to_prompt) ] if history.any?) ].join("\n\n")
     end
 
-    def evidence_lines(theme, evidence)
-      return [ "Evidence: find it in the posts listed below." ] if evidence.whole_week.any?
-
-      [ "Evidence from this week:", *evidence.for_theme(theme.position).map(&:to_prompt) ]
-    end
+    def evidence_lines(theme, evidence) = [ "Evidence from this week:", *evidence.for_theme(theme.position).map(&:to_prompt) ]
 
     def not_enough_evidence
       { "headline" => "Not enough evidence this week to write a report.", "overview" => "", "sections" => [],
