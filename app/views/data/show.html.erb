@@ -1,0 +1,28 @@
+<% content_for(:title, "Data · Community Voices") %>
+<h1>Forum data</h1>
+<p>Everything in this app is built from posts crawled from the <a href="https://forums.ankiweb.net">Anki forums</a>: reports, search, evaluations and charts. This page shows what is stored and lets you crawl more.</p>
+<p class="muted">On first start the app crawls <%= ENV.fetch("BACKFILL_WEEKS", 2) %> full weeks (set by <code>BACKFILL_WEEKS</code>) so it is ready in about a minute. That is enough for reports, search and the A/B test. The backtest needs 6 full weeks and the retrieval eval 12, so crawl 12 for the full demo. A new crawl also runs every Monday at 6am while the app is up.</p>
+
+<%= refresh_while(@last_crawl&.active?) %>
+
+<h2>Crawl the forum</h2>
+<p><%= JobRun.kind("ingest").blurb %></p>
+<%= render "shared/job_form", kind: JobRun.kind("ingest"), last: @last_crawl, configured: true, full_weeks: @status.full_weeks.size %>
+
+<h2>What is stored</h2>
+<% if @status.empty? %>
+  <p class="muted">Nothing yet.</p>
+<% else %>
+  <table>
+    <thead><tr><th>Week</th><th>Threads</th><th>Posts</th><th>Chunks embedded</th><th></th></tr></thead>
+    <tbody>
+      <% @status.rows.each do |row| %>
+        <tr>
+          <td><%= row.week %></td><td><%= row.threads %></td><td><%= row.posts %></td><td><%= row.chunks %></td>
+          <td class="muted"><%= { "full" => "complete", "current" => "this week, still going", "partial" => "partly crawled, left out" }[row.state] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <p class="muted">A chunk is a piece of a post, up to 150 words, turned into a vector so it can be found by meaning. Only complete weeks get reports.</p>
+<% end %>

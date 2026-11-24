@@ -1,0 +1,9 @@
+<%# One line under the tabs, on every page: what data the app is working from. %>
+<% status = Ingest::Status.new %>
+<p class="status muted">
+  <% if status.empty? %>
+    No forum data yet. <%= link_to "Crawl the forum", data_path %> to start.
+  <% else %>
+    Forum data: <%= weeks_summary(status.full_weeks) %> · <%= number_with_delimiter(status.posts) %> posts · newest <%= l(status.newest_post_at, format: :short) %> · <%= link_to "details", data_path %>
+  <% end %>
+</p>

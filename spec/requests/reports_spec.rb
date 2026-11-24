@@ -25,9 +25,25 @@ RSpec.describe "Reports", type: :request do
   end
 
   it "explains what to do and shows weeks without a report" do
+    allow(Llm).to receive(:client).and_return(instance_double(Llm::Anthropic, configured?: true))
     get reports_path
 
-    expect(response.body).to include("Press <strong>Write report</strong>", "No report yet")
+    expect(response.body).to include("press <strong>Write report</strong>", "None yet")
+  end
+
+  it "labels A/B reports and refreshes while one is being written" do
+    Report.create!(week_start: Date.new(2026, 11, 16), arm: "none", status: "done", content: {})
+    Report.create!(week_start: Date.new(2026, 11, 16), arm: "rag", status: "pending")
+    get reports_path
+
+    expect(response.body).to include("A/B: no context", "Report · ", "writing…", 'http-equiv="refresh"')
+  end
+
+  it "says how to set the key when there is none" do
+    allow(Llm).to receive(:client).and_return(instance_double(Llm::Anthropic, configured?: false))
+    get reports_path
+
+    expect(response.body).to include("To write reports, set <code>LLM_API_KEY</code>")
   end
 
   it "shows a report with citations linked to the forum and model text escaped" do

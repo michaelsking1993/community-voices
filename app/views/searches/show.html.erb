@@ -1,25 +1,33 @@
 <% content_for(:title, "Search · Community Voices") %>
 <h1>Search by meaning</h1>
-<p class="muted">Finds forum posts whose <em>meaning</em> is close to your question, even when they share no words with it. Your query becomes a vector (computed locally, no API key needed) and Postgres returns the nearest stored chunks. Same rules as the report: nothing farther than <%= Search::Retriever::MAX_DISTANCE %> cosine distance (smaller is closer), at most <%= Search::Retriever::PER_TOPIC %> chunks per thread (so one long thread cannot fill the page). Every match inside the cut-off is listed, up to <%= Search::Retriever::CANDIDATES %>.</p>
+<p>Type a question in your own words. The app finds forum posts that <em>mean</em> something close, even when they use different words. This is the same search the report uses to pick its evidence, and it needs no API key.</p>
 
 <%= form_with url: search_path, method: :get, class: "search-form" do |f| %>
-  <%= f.search_field :q, value: @query, placeholder: "e.g. my decks disappeared after syncing", "aria-label": "Search query", autofocus: true %>
-  <%= f.submit "Search", name: nil %>
+  <%= f.search_field :q, value: @query, placeholder: "e.g. my decks disappeared after syncing", "aria-label": "Search query", autofocus: @query.blank? %>
+  <%= f.submit "Search", name: nil, class: "button" %>
 <% end %>
 
-<% if @result %>
-  <% if @result.empty? %>
-    <p class="notice">Nothing within distance <%= Search::Retriever::MAX_DISTANCE %> of that query: the forum data holds no clear match. Try different words, or check that you have run <code>bin/rails ingest:backfill</code>.</p>
-  <% else %>
-    <p class="muted"><%= pluralize(@result.hits.size, "result") %>, closest first.</p>
-    <% @result.hits.each do |hit| %>
-      <% post = hit.chunk.post %>
-      <div class="hit">
-        <strong><%= post.topic.title %></strong>
-        <span class="muted">· <%= post.topic.category_name %> · <%= l(post.posted_at.to_date, format: :long) %> · distance <span class="distance"><%= number_with_precision(hit.distance, precision: 3) %></span></span>
-        <p><%= truncate(hit.chunk.content.split("\n\n", 2).last, length: 400) %></p>
-        <%= link_to "Open on the forum", post.url, rel: "noopener", target: "_blank" %>
-      </div>
+<% if @result.nil? %>
+  <p class="muted">Try:
+    <% [ "my cards disappeared after syncing", "how do I add images to cards", "the app crashes on startup" ].each_with_index do |example, i| %>
+      <%= " · " unless i.zero? %><%= link_to example, search_path(q: example) %>
     <% end %>
+  </p>
+<% elsif @result.empty? %>
+  <p class="notice">No post is close enough in meaning to that question, so nothing is shown rather than a poor match. Try other words, or <%= link_to "crawl more weeks", data_path %>.</p>
+<% else %>
+  <p class="muted"><%= pluralize(@result.hits.size, "match", plural: "matches") %>, closest first. Distance runs from 0 (same meaning) to <%= Search::Retriever::MAX_DISTANCE %> (the cut-off).</p>
+  <% @result.hits.each do |hit| %>
+    <% post = hit.chunk.post %>
+    <div class="hit">
+      <strong><%= link_to post.topic.title, post.url, rel: "noopener", target: "_blank" %></strong>
+      <span class="muted">· <%= post.topic.category_name %> · <%= l(post.posted_at.to_date, format: :long) %> · distance <span class="distance"><%= number_with_precision(hit.distance, precision: 2) %></span></span>
+      <p><%= truncate(hit.chunk.content.split("\n\n", 2).last, length: 400) %></p>
+    </div>
   <% end %>
 <% end %>
+
+<details>
+  <summary class="muted">How search works</summary>
+  <p class="muted">Your question becomes a list of 384 numbers (a vector) on this machine, using the same model that turned every stored post into vectors. Postgres (pgvector) returns the stored chunks whose vectors point in the most similar direction. Anything farther than <%= Search::Retriever::MAX_DISTANCE %> cosine distance is dropped, and at most <%= Search::Retriever::PER_TOPIC %> chunks come from any one thread so a long thread cannot fill the page. Up to <%= Search::Retriever::CANDIDATES %> matches are listed.</p>
+</details>

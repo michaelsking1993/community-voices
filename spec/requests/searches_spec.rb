@@ -31,13 +31,13 @@ RSpec.describe "Search", type: :request do
 
     get search_path(q: "sync fails network error phone")
 
-    expect(response.body.scan("Open on the forum").size).to be > Search::Retriever::K
+    expect(response.body.scan(%(class="hit")).size).to be > Search::Retriever::K
   end
 
   it "says so when nothing is close enough" do
     get search_path(q: "zebra quantum pancake")
 
-    expect(response.body).to include("Nothing within distance")
+    expect(response.body).to include("No post is close enough")
   end
 
   it "ignores a blank query" do

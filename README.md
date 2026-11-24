@@ -57,7 +57,7 @@ With Docker, put `docker compose exec app` in front of each command (for example
 | `bin/rails 'ab:run[1]'` | A/B test last week: three reports, checks, a support judge and a blind ranking (about $0.65). Set `LLM_JUDGE_MODEL` to judge with a different model |
 | `bin/rails 'backtest:run[4]'` | Score the last 4 weeks' predictions against what happened next |
 
-The app has five tabs: Community report (write and read reports), Search (a semantic search box over the stored posts, no LLM key needed), Evaluate (buttons to crawl the forum and to run the retrieval eval, A/B test and backtest), Charts (their results) and Flashcards (coming soon). [Step 12](docs/steps/12-tabbed-ui.md)
+The app has six tabs: Community report (write and read reports), Search (a semantic search box over the stored posts, no LLM key needed), Evaluate (buttons for the A/B test, backtest and retrieval eval), Charts (their results), Data (what is stored, and a button to crawl more, e.g. 12 weeks for the full demo) and Flashcards (coming soon). A line under the tabs always says how much forum data the app holds. [Step 12](docs/steps/12-tabbed-ui.md)
 
 The Charts page (http://localhost:3000/charts) draws the A/B test, the backtest, the embedding map and the retrieval stats from whatever is in the database.
 

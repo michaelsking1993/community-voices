@@ -25,6 +25,7 @@
 
   <body>
     <%= render "shared/tabs" %>
+    <%= render "shared/status" %>
     <% flash.each do |_type, message| %>
       <p class="notice" role="status"><%= message %></p>
     <% end %>

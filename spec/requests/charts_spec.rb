@@ -5,7 +5,7 @@ RSpec.describe "Charts page", type: :request do
     get charts_path
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("ab:run", "backtest:run", "ingest:backfill", "Retrieval stats")
+    expect(response.body).to include("Run the A/B test on the Evaluate tab", "Run the backtest", "Crawl the forum on the Data tab", "Retrieval stats")
   end
 
   it "hands each figure to the Plotly Stimulus controller as JSON" do

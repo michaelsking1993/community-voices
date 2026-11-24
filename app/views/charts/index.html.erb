@@ -1,6 +1,7 @@
 <% content_for(:title, "Charts · Community Voices") %>
 <h1>Charts</h1>
-<p class="muted">Everything here is drawn from the database. Figures are described by the server and drawn by <a href="https://plotly.com/javascript/">Plotly</a> through a small Stimulus controller.</p>
+<p>The results of the <%= link_to "Evaluate", evaluation_path %> tab, plus two views of the data itself: a map of every forum thread by meaning, and which posts searches and reports retrieve most. Each section fills in once its task has run.</p>
+<p class="muted">Drawn from the database. The server describes each figure and <a href="https://plotly.com/javascript/">Plotly</a> draws it through a small Stimulus controller.</p>
 
 <% @sections.each do |section| %>
   <% title, charts, empty = section.title, section.charts, section.empty %>
