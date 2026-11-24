@@ -10,6 +10,11 @@ module Embeddings
 
     def self.instance = @instance ||= new
 
+    # Every embedding model in the app answers these two, so the Embedder
+    # can stamp chunks and Embeddings::Guard can check lengths up front.
+    def model_id = MODEL_ID
+    def dimensions = DIMENSIONS
+
     def embed(texts)
       pipeline.(texts)
     end

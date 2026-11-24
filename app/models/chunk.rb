@@ -2,7 +2,14 @@ class Chunk < ApplicationRecord
   belongs_to :post
   has_neighbors :embedding, dimensions: Embeddings::LocalModel::DIMENSIONS
 
-  scope :pending_embedding, -> { where(embedding: nil) }
+  # Chunks to (re-)embed with `model_id`: never embedded, or embedded by a
+  # different model, whose vectors cannot be compared with this one's.
+  scope :needs_embedding, ->(model_id) {
+    where(embedding: nil).or(where(embedding_model: nil)).or(where.not(embedding_model: model_id))
+  }
+
+  # Chunks whose vectors can be compared with `model_id`'s.
+  scope :embedded_by, ->(model_id) { where.not(embedding: nil).where(embedding_model: model_id) }
 
   # HNSW keeps only `hnsw.ef_search` candidates (default 40) and applies
   # WHERE clauses and row visibility after that. A date filter, or many

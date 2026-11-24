@@ -32,7 +32,10 @@ module Search
     # `topic_ids` limits the search to some forum threads (our topic ids).
     def call(query, window: nil, k: K, per_topic: PER_TOPIC, max_distance: MAX_DISTANCE, purpose: "adhoc", topic_ids: nil)
       started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      candidates = nearest(@model.embed([ query ]).first, window, topic_ids)
+      Embeddings::Guard.check_model!(@model)
+      vector = @model.embed([ query ]).first
+      Embeddings::Guard.check_vectors!(@model, [ vector ])
+      candidates = nearest(vector, window, topic_ids)
       hits = pick(candidates, k:, per_topic:, max_distance:)
       ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
       Result.new(retrieval: log(query, window, hits, candidates.size, ms, k:, per_topic:, max_distance:, purpose:), hits:)
@@ -43,8 +46,11 @@ module Search
     # HNSW only looks at `ef_search` neighbours (default 40), and pgvector
     # 0.6/0.7 applies the WHERE clause after that. With a narrow date window
     # most of those 40 can be filtered out, so we raise ef_search.
+    #
+    # Only chunks embedded by the same model as the query are compared:
+    # another model's vectors are on a different map.
     def nearest(vector, window, topic_ids)
-      scope = Chunk.where.not(embedding: nil).joins(:post).preload(post: :topic)
+      scope = Chunk.embedded_by(@model.model_id).joins(:post).preload(post: :topic)
       scope = scope.where(posts: { posted_at: window }) if window
       scope = scope.where(posts: { topic_id: topic_ids }) if topic_ids
       Chunk.with_ef_search(EF_SEARCH) do

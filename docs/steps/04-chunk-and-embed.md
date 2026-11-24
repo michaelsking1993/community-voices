@@ -50,8 +50,19 @@ It also shows the next problem: **four of five hits come from one thread.** Step
 
 An embedding turns text into a point in a 384-dimension space where distance means difference in meaning. Chunking decides *what* each point represents: too big and it is a blur of topics (and gets truncated), too small and it loses context. The header is a cheap way to put context back. The content hash makes the pipeline incremental, which is how you keep "overly large amounts of data" cheap: you only ever pay to embed what is new.
 
+## Later: stamping the model (added 2026-11-24)
+
+Reviewing this step, I asked: if we switched embedding models, how would the app know? It would not have. Vectors from two models are on different maps, so they cannot be compared, even when both have 384 numbers. Now:
+
+- Every chunk records the model that embedded it (`chunks.embedding_model`). Existing rows were stamped `Xenova/all-MiniLM-L6-v2`, the only model ever used.
+- The Embedder re-embeds any chunk stamped with a different model, so switching models re-embeds everything once, automatically.
+- The Retriever only compares chunks embedded by the same model as the query.
+- `Embeddings::Guard` checks the model's length against the column (`vector(384)`) *before* calling the model, and checks every returned vector before saving or searching. A 1,536-number model now fails at once with a message saying what to change, instead of a database error halfway through a batch.
+
+Themes and the map average whatever vectors are stored; between switching models and the next embed run they could mix maps. Running the Embedder right after a switch closes that window. (DECISIONS #54)
+
 ## What I would do next
 
 - Chunks with many long words or URLs can exceed the model's ~256 word-piece limit, and the model then ignores the tail. A token-based splitter (using the model's own tokenizer) would be exact. Deferred: rare in forum prose, and the overlap means the tail usually starts the next chunk.
 - Split on sentence or paragraph boundaries instead of a fixed word count.
-- Try a larger model (e.g. bge-small or a hosted model) and compare retrieval hit rates on the step 5 test set.
+- Try a larger model (e.g. bge-small or a hosted model) and compare retrieval hit rates on the step 5 test set. The model stamp means a switch re-embeds everything by itself; a model with a different length also needs a migration for the column.

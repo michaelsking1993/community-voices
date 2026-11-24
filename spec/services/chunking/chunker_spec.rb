@@ -48,12 +48,13 @@ RSpec.describe Chunking::Chunker do
   it "clears the embedding when the text changes, so only that chunk is re-embedded" do
     post = create_post(raw: words(20))
     chunker.call(post)
-    Chunk.sole.update!(embedding: Array.new(384, 0.1))
+    Chunk.sole.update!(embedding: Array.new(384, 0.1), embedding_model: "some-model")
 
     post.update!(raw: words(20, "edited"))
     chunker.call(post.reload)
 
     expect(Chunk.sole.embedding).to be_nil
+    expect(Chunk.sole.embedding_model).to be_nil
     expect(Chunk.sole.content).to include("edited0")
   end
 
