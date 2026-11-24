@@ -52,3 +52,7 @@ summary { cursor: pointer; }
 .flashback strong, .flashback span { display: block; }
 .flashback strong { font-size: 0.8em; text-transform: uppercase; color: var(--muted); margin-top: 0.75rem; }
 .flashbuttons { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+/* How I built it tab (README section) */
+.readme h3 { margin-top: 2rem; }
+.readme code { font-size: 0.9em; }

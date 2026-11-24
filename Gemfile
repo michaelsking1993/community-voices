@@ -53,6 +53,7 @@ gem "neighbor"   # pgvector types + nearest_neighbors for ActiveRecord
 gem "informers"  # local ONNX sentence embeddings (no API key needed)
 gem "faraday"    # HTTP client for the Discourse crawler
 gem "anthropic"  # official Claude SDK, for writing reports
+gem "redcarpet", "~> 3.6" # Markdown to HTML, for the "How I built it" tab (read from README.md)
 
 group :development, :test do
   gem "rspec-rails"
