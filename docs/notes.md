@@ -60,6 +60,7 @@ Short notes from each step, drafted by Claude as we went. For the whole pipeline
 
 - Reports use only pre-week data (tested with a planted future post); only the scorer looks forward.
 - 4 weeks, 13 scored predictions: hit rate 0.42. High confidence (0.25) did not beat low (0.50): small sample, but the confidence is not trustworthy yet.
+- Rerun from scratch (2026-11-24, my machine): 10 scored, hit rate 0.45; high and low both 0.50. The overall rate is steady; the splits are noise at this size.
 
 ## Step 10: A/B test
 

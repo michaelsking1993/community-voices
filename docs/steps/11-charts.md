@@ -9,7 +9,7 @@ A `/charts` page, with no React. The server describes each figure as plain data 
 - **Embedding map**: each forum thread as a dot, placed by the meaning of its posts, coloured by forum category.
 - **Retrieval stats**: the chunks retrieved most, and how close retrieved chunks were.
 
-![The charts page](img/charts.png)
+![The charts page](../img/charts.png)
 
 ## Why this way
 
