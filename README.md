@@ -2,6 +2,8 @@
 
 Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works out what people talked about, and writes a cited "Community Voices" report: what happened last week and what is likely to come up next week. It uses retrieval-augmented generation (RAG) over a pgvector table in Postgres.
 
+**What is Anki?** [Anki](https://apps.ankiweb.net) is the gold-standard app for spaced-repetition flashcards: it shows you each card just before you would forget it. Medical students, serious language learners and many others rely on it. It is open source and has a very active community, which makes its forum a rich, honest source of what users struggle with and ask for, the same kind of signal a company making flashcards for language learners would want to hear. I have used Anki heavily for the last 15 years, so I could also tell whether a report actually got the community right.
+
 **See a run without installing anything:** [`docs/samples/`](docs/samples) has one week's report written three ways (RAG, paste the whole week, no context) and how they compared.
 
 ## Where each part of the challenge lives
