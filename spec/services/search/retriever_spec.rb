@@ -51,6 +51,25 @@ RSpec.describe Search::Retriever do
     expect(result.chunks.map { _1.post.topic }).to contain_exactly(sync, sync, fonts)
   end
 
+  it "only compares chunks embedded by the same model as the query" do
+    add_post("sync fails with a network error every time I open the app on my phone today", topic: sync)
+    add_post("how do I change the font size on the back of my cards in the editor window", topic: fonts)
+    embed_all
+    Chunk.joins(:post).where(posts: { topic_id: fonts.id }).update_all(embedding_model: "another-384-model")
+
+    result = retriever.call("font size cards editor", max_distance: 1.0)
+
+    expect(result.chunks.map { _1.post.topic }).to eq([ sync ])
+  end
+
+  it "refuses a model whose vectors do not fit the column, before searching" do
+    wrong = FakeEmbeddingModel.new(model_id: "a-768-model", dimensions: 768)
+
+    expect { described_class.new(model: wrong).call("sync") }.to raise_error(Embeddings::Guard::Mismatch)
+    expect(wrong.calls).to be_empty
+    expect(Retrieval.count).to eq(0)
+  end
+
   it "only looks inside the time window" do
     add_post("sync error when syncing my collection with the server, last month edition", topic: sync, posted_at: Time.zone.parse("2026-10-01"))
     add_post("sync error when syncing my collection with the server, this week edition", topic: sync)

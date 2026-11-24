@@ -15,7 +15,7 @@ Opening a single report keeps the Community report tab lit.
 
 ## Why this way
 
-- **Search reuses `Search::Retriever`.** The same 0.6 cosine cut-off and max 2 chunks per thread as the report, so what you see in search is what the report could cite. No date window, so you can search all stored weeks. (#54)
+- **Search reuses `Search::Retriever`.** The same 0.6 cosine cut-off and max 2 chunks per thread as the report, so what you see in search is what the report could cite. No date window, so you can search all stored weeks. (#56)
 - **No key needed.** Embedding is local (all-MiniLM-L6-v2), so search works on a fresh clone with only the crawl done. The first search is slow while the model loads.
 - **Searches are logged** with purpose `search`, so they show up in the Charts retrieval stats like any other retrieval.
 - **An empty result is a message, not a guess.** Nothing within 0.6 means "the forum has no clear match".

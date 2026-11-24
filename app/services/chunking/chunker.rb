@@ -45,7 +45,7 @@ module Chunking
       return if chunk&.content_hash == digest # unchanged: keep the embedding
 
       chunk ||= post.chunks.build(position:)
-      chunk.update!(content:, content_hash: digest, token_estimate: content.length / CHARS_PER_TOKEN, embedding: nil)
+      chunk.update!(content:, content_hash: digest, token_estimate: content.length / CHARS_PER_TOKEN, embedding: nil, embedding_model: nil)
     end
   end
 end
