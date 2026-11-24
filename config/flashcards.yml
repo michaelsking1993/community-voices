@@ -5,9 +5,6 @@ shared:
   - term: Grounded
     meaning: An answer tied to real sources you can check, not made up. The opposite is a hallucination.
     where: '`Reports::Grounding` checks that the report''s citations and quotes really come from the evidence we sent.'
-  - term: RAG (retrieval-augmented generation)
-    meaning: Before asking a model to write, *retrieve* the relevant text and paste it into the prompt, so the answer rests on real material.
-    where: For each theme, we retrieve the closest chunks, then the LLM writes from them.
   - term: Embedding / vector
     meaning: A fixed-length list of numbers that represents a text's meaning. Similar meanings give lists that are close together.
     where: Every chunk gets one list of 384 numbers.
@@ -47,9 +44,6 @@ shared:
   - term: Evidence
     meaning: The numbered items pasted into the prompt for the model to cite.
     where: '`[E1]`, `[E2]`…: mostly one chunk each.'
-  - term: Citation
-    meaning: A pointer from a claim to its evidence.
-    where: The model writes `[E12]` after a claim; code checks that E12 exists.
   - term: Temperature
     meaning: A dial for how much randomness a chat model uses when picking each next word. Low is predictable, high is varied. The API caller sets it; chat apps hide it.
     where: We don't set it; we use the provider's default.
