@@ -1,11 +1,11 @@
 namespace :ingest do
-  desc "Crawl, chunk and embed the last N weeks of forum posts (default 2). Example: bin/rails 'ingest:backfill[12]'"
+  desc "Crawl, chunk and embed the last N full weeks of forum posts, plus this week so far (default 2). Example: bin/rails 'ingest:backfill[12]'"
   task :backfill, [ :weeks ] => :environment do |_, args|
     weeks = (args[:weeks] || ENV.fetch("BACKFILL_WEEKS", 2)).to_i
     next puts("Skipping backfill (0 weeks)") if weeks.zero?
 
-    since = weeks.weeks.ago
-    puts "Crawling #{weeks} week(s) of forums.ankiweb.net at 1 request/second..."
+    since = Ingest::Coverage.new.crawl_from(weeks)
+    puts "Crawling forums.ankiweb.net from #{since.to_date} (#{weeks} full week(s) plus this one; already-stored days are skipped) at 1 request/second..."
     crawled = Ingest::ForumCrawler.new(logger: ActiveSupport::Logger.new($stdout)).call(since:)
     puts "Crawled #{crawled.pages} pages, saved #{crawled.posts_saved} posts."
 
