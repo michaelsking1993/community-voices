@@ -13,5 +13,4 @@ RSpec.describe "Tabs", type: :request do
 
     expect(response.body).to match(%r{<a aria-current="page" href="/">Community report</a>})
   end
-
 end
