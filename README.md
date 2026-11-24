@@ -85,7 +85,7 @@ The rest of this README is laid out like a system-design answer: the problem, th
 
 ## Questions I asked, and the assumptions I made
 
-Every call is in [`DECISIONS.md`](DECISIONS.md) (54 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
+Every call is in [`DECISIONS.md`](DECISIONS.md) (55 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
 
 - **"A week" is Monday to Monday** (#27), so "last week" and "next week" are unambiguous, and partly crawled weeks are left out of counts and trends (#51).
 - **The community is its public posts.** Private messages and staff-only posts are not in the public API, so our post counts are lower than the forum's own (topic counts match within 2; [step 3](docs/steps/03-ingest.md)).
@@ -157,7 +157,7 @@ Smaller items are listed under "What I would do next" on each [step page](docs/R
 
 | Risk | Seen? | What is in place | What is left |
 |---|---|---|---|
-| **Retrieval misses a big thread.** No theme's query lands near it, so the model never sees it | Yes: the first A/B run missed the week's second-biggest thread, which paste-all covered ([step 10](docs/steps/10-ab-test.md)) | A chunk budget shared by theme size, and each theme's 2 busiest threads always included (#53). On the rerun the judge's coverage score went from 3 to 5 | Checked on one week only. A big thread in a theme outside the top 6 can still be missed |
+| **Retrieval misses a big thread.** No theme's query lands near it, so the model never sees it | Yes: the first A/B run missed the week's second-biggest thread, which paste-all covered ([step 10](docs/steps/10-ab-test.md)) | A chunk budget shared by theme size, and each theme's 2 busiest threads always included (#53). On the rerun the judge's coverage score went from 3 to 5 | Checked on one week only. A big thread whose theme the search finds nothing for can still be missed. (Themes 7 and 8 went unreported until #55) |
 | **The model invents details** | The blind judge counts several "invented" specifics in both grounded reports; for RAG some are trend counts and earlier-week references its facts cannot confirm either way | Cite-or-omit, code checks on every citation and quote, SQL-only numbers, no call without evidence, a support judge | Specifics in prose can still slip through; the support judge is a model too |
 | **The judge is biased or noisy** | One week, one judge, one shuffled order | A different judge model (`LLM_JUDGE_MODEL`), reports shuffled and stripped of citation ids | More weeks, each ranked in two orders |
 | **Themes are mixed** | Yes: k-means puts every thread in some group, so one-off threads join the nearest theme | Only themes with 2 or more threads are written up; the LLM sees titles and excerpts when naming | Threshold or density clustering (deferred above) |

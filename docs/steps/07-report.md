@@ -17,7 +17,7 @@
 
 ```
 Reports::Builder.call(week)
-  themes      Theme.for_week(week), or Themes::Finder now; >= 2 threads; top 6
+  themes      Theme.for_week(week), or Themes::Finder now; >= 2 threads; all of them, up to 8 (top 6 until #55)
   evidence    RagEvidence: per theme, Retriever(label + summary)
                 this week:   k 6, max 2 per thread      purpose "report"
                 12 weeks before: k 3, max 1 per thread  purpose "report_history"

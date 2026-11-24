@@ -12,7 +12,9 @@ module Reports
   #
   # With no evidence at all, it makes no LLM call and says so.
   class Builder
-    THEMES = 6      # themes covered, biggest first
+    # Every theme k-means makes is written up (biggest first), so the
+    # report covers the whole week; k-means' own ceiling keeps it readable.
+    THEMES = Themes::Finder::K_RANGE.max
     MIN_THREADS = 2 # a "theme" of one thread is not a theme
 
     SYSTEM = <<~PROMPT.freeze
