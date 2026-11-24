@@ -105,7 +105,124 @@ Every call is in [`DECISIONS.md`](DECISIONS.md) (52 rows: the question, the opti
 | `judgements` | What a judge concluded about a report: prediction scores (backtest), support checks and blind rankings (A/B) |
 | `retrievals`, `retrieval_hits` | Every search the app runs: the query, window and settings, and each chunk it returned with its rank and distance |
 
+How the tables connect (key columns only; [`db/schema.rb`](db/schema.rb) has the rest):
+
+```mermaid
+erDiagram
+    topics ||--o{ posts : "has"
+    posts ||--o{ chunks : "split into"
+    themes ||--o{ theme_topics : "groups"
+    topics ||--o{ theme_topics : "belongs to"
+    retrievals ||--o{ retrieval_hits : "returned"
+    chunks ||--o{ retrieval_hits : "found as"
+    reports |o--o{ retrievals : "searched for"
+    reports |o--o{ judgements : "judged by"
+
+    topics {
+        bigint discourse_id UK "the forum's own id"
+        string title
+        string category_name
+    }
+    posts {
+        bigint discourse_id UK "upsert key"
+        bigint topic_id FK
+        string username
+        text raw
+        datetime posted_at "every search filters on this"
+    }
+    chunks {
+        bigint post_id FK
+        int position "unique with post_id"
+        text content "150 words, 30 overlap, plus a header"
+        string content_hash "skip re-embedding unchanged text"
+        vector_384 embedding "all-MiniLM-L6-v2, HNSW cosine index"
+    }
+    themes {
+        date week_start
+        int position
+        string label "named by the LLM"
+        string kind
+        vector_384 centroid "average of its threads"
+        int post_count "counted in SQL"
+    }
+    theme_topics {
+        bigint theme_id FK
+        bigint topic_id FK
+        float similarity
+    }
+    retrievals {
+        text query
+        string purpose "report, backtest, eval, adhoc"
+        datetime window_start
+        float max_distance "cut-off, 0.6"
+        bigint report_id FK "null outside reports"
+    }
+    retrieval_hits {
+        bigint retrieval_id FK
+        bigint chunk_id FK
+        int rank
+        float distance "cosine distance"
+    }
+    reports {
+        date week_start
+        string arm "rag, paste_all, none"
+        jsonb content "the model's structured answer"
+        jsonb evidence "numbered items E1, E2 ..."
+        jsonb grounding "citation and quote checks"
+        decimal cost_usd
+    }
+    judgements {
+        string kind "prediction, support, ranking"
+        date week_start
+        bigint report_id FK "null for a ranking"
+        jsonb data
+    }
+```
+
+Two links are by week, not by foreign key: a report and its themes share a `week_start`, and a ranking judgement covers all three A/B reports of its week.
+
 ## Shape of the system, and why
+
+Importing and reporting are separate jobs. The import (`IngestWeekJob`, Mondays at 6am on Solid Queue) only adds data; a report (`GenerateReportJob` from the "Write report" button, or `bin/rails report:build`) reads whatever is stored, so it can be written for any past week without touching the forum.
+
+```mermaid
+flowchart TD
+    subgraph INGEST["Import (weekly)"]
+        F[("forums.ankiweb.net<br/>Discourse JSON")] -->|"ForumCrawler<br/>1 request/s, last 8 days"| TP["Upsert topics and posts<br/>by the forum's own id"]
+        TP -->|Chunker| CH["Chunks<br/>150 words, 30 overlap,<br/>header, content hash"]
+        CH -->|"Embedder, local<br/>all-MiniLM-L6-v2"| EM[("chunks.embedding<br/>vector(384), HNSW")]
+    end
+
+    subgraph REPORT["Report (one week)"]
+        TH["Themes::Finder<br/>a vector per thread, k-means,<br/>SQL counts, LLM names each theme"]
+        TH --> RE["RagEvidence, per theme<br/>Search::Retriever: week window,<br/>cut-off 0.6, max 2 chunks per thread,<br/>budget by theme size, busiest threads,<br/>3 look-alikes from earlier weeks"]
+        RE --> SG["Signals<br/>trend counts, beta and release threads"]
+        SG --> WR["Builder: one structured LLM call<br/>report and predictions,<br/>citing numbered evidence E1, E2 ..."]
+        RE -.->|"no evidence: no LLM call"| SV
+        WR --> GR["Reports::Grounding, in code<br/>citations point at real evidence,<br/>quotes are word for word,<br/>uncited sentences counted"]
+        GR --> SV[("reports")]
+        RE -.->|"every search logged"| RL[("retrievals,<br/>retrieval_hits")]
+    end
+
+    subgraph EVAL["Evaluate (rake tasks)"]
+        AB["ab:run<br/>same Builder, three arms:<br/>none, paste_all, rag<br/>+ support judge, blind ranker"]
+        BT["backtest:run<br/>score each week's predictions<br/>against the week that followed"]
+        J[("judgements")]
+        AB --> J
+        BT --> J
+    end
+
+    EM --> TH
+    EM --> RE
+    SV --> AB
+    SV --> BT
+    J --> CT["Charts page<br/>A/B, backtest, PCA map of threads,<br/>retrieval stats"]
+    RL --> CT
+    EM --> CT
+```
+
+<details>
+<summary>The same pipeline as plain text, with its settings</summary>
 
 ```
  INGEST (weekly job, Mondays 6am, Solid Queue)
@@ -127,6 +244,8 @@ Every call is in [`DECISIONS.md`](DECISIONS.md) (52 rows: the question, the opti
    Backtest    score past predictions against the week that followed
    Charts      A/B, backtest, PCA map of every thread, retrieval stats from the retrieval log
 ```
+
+</details>
 
 Why this shape:
 
@@ -196,6 +315,10 @@ That miss set a rule for the whole project: never pick a threshold by feel. The 
 ### Questions to check myself
 
 The later step pages end with "Check yourself" questions, such as "Paste-all scored a bit higher than RAG. Why is RAG still the right design for this app?" They are there so I can explain each step, not just run it. The [concepts](docs/concepts) pages are the short explanations I wanted when I started.
+
+### Understand every piece before moving on
+
+I also ran one long, intensive walkthrough of the whole pipeline with the assistant, and made sure I understood literally every piece of it before continuing. The rule was simple: we did not move on until I could explain the current piece back in my own words. That covered what an embedding is and why 384 numbers can stand for meaning, how chunking works and why chunks overlap, what cosine distance measures and where the 0.6 cut-off comes from, why importing and searching are separate jobs, and how citation grounding is checked in code instead of trusted to the model. Anything I could not explain yet became a question, and the answers fed the [concepts](docs/concepts) pages and my [notes](docs/notes.md).
 
 ### Small, tested pull requests, and decisions in writing
 
