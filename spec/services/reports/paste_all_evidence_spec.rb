@@ -15,17 +15,20 @@ RSpec.describe "A/B arms in Reports::Builder" do
     end
   end
 
-  it "paste_all puts every post of the week in the prompt, with no search" do
-    builder = Reports::Builder.new(llm:, arm: "paste_all", evidence_source: Reports::PasteAllEvidence.new)
+  it "paste_all puts every post of the week in the prompt once, with no search and no themes" do
+    create_post(raw: "thanks, that worked!", topic: Topic.find_by(discourse_id: 1), posted_at: Time.zone.parse("2026-11-19 10:00"))
+    builder = Reports::Builder.new(llm:, arm: "paste_all", evidence_source: Reports::PasteAllEvidence.new, themes: false)
     report = builder.call(week)
     prompt = llm.calls.last[:prompt]
 
     expect(report.arm).to eq("paste_all")
-    expect(prompt).to include("# Every post from this week", "first post about decks", "second post about the toolbar", "find it in the posts listed below")
-    expect(prompt).not_to include("earlier week that must be left out")
-    expect(report.evidence.size).to eq(2)
+    expect(prompt).to include("# Every post from this week", "first post about decks", "second post about the toolbar", "thanks, that worked!")
+    expect(prompt.scan('"Thread 1"').size).to eq(1) # each thread's title once
+    expect(prompt).not_to include("earlier week that must be left out", "# Themes", "Theme 1", "Topic: ")
+    expect(report.evidence.size).to eq(3) # posts, not chunks; short posts too
+    expect(report.content["themes"]).to eq([])
     expect(Retrieval.count).to eq(0)
-    expect(llm.calls.last[:system]).to include("Use only the evidence given")
+    expect(llm.calls.last[:system]).to include("Use only the evidence given", "No themes are given")
   end
 
   it "none writes from the dates alone, with the plain system prompt" do

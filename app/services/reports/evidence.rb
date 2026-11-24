@@ -11,6 +11,12 @@ module Reports
             text: chunk.content.split("\n\n", 2).last, theme:, history:)
       end
 
+      def self.from_post(id, post, text, theme:)
+        new(id:, chunk_id: nil, post_id: post.id, url: post.url, title: post.topic.title,
+            category: post.topic.category_name, date: post.posted_at.to_date.iso8601, text:, theme:, history: false)
+      end
+
+      def thread_url = url.rpartition("/").first
       def to_prompt = "[#{id}] #{date} · #{category} · \"#{title}\"\n#{text}"
     end
 
@@ -26,6 +32,10 @@ module Reports
 
     def add(chunk, theme:, history: false)
       Item.from_chunk("E#{items.size + 1}", chunk, theme:, history:).tap { items << _1 }
+    end
+
+    def add_post(post, text, theme:)
+      Item.from_post("E#{items.size + 1}", post, text, theme:).tap { items << _1 }
     end
 
     def [](id) = items.find { _1.id == id }
