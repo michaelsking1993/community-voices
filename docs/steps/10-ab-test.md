@@ -55,8 +55,29 @@ Reports written by `claude-opus-5-5`; support judge and blind ranker `claude-son
 - **The fix:** share the chunk budget by each theme's size, and always give each theme's 2 busiest threads (counted in SQL) their chunk closest to the query (vectors). 17% more input tokens; the report came out shorter, so it cost slightly less. Coverage went from 3 to 5 and RAG now matches paste-all on three of the four scores.
 - **Paste-all is still ranked first**, on usefulness (5 vs 4), at **2.8 times RAG's cost** and 3.7 times its input tokens. While a week fits in the prompt, pasting it all is a strong, simple baseline. RAG's case is cost and scale: pasting grows with the data (12 weeks would be ~750,000 tokens, past any context window), retrieval grows with the question.
 - The judge still counts several "invented" specifics in each grounded report. For RAG some are things its facts cannot confirm (trend counts, earlier-week references): the judge only sees the week's totals and thread titles.
-- **The fix was checked on the week that exposed the problem.** The budget-by-size change (#53) was designed after seeing this week's miss, and then re-run on this same week, so its coverage gain is not yet proven on data it has not seen. The honest next step is the A/B on a week the fix was never looked at.
+- **The fix was checked on the week that exposed the problem.** The budget-by-size change (#53) was designed after seeing this week's miss, and then re-run on this same week. The next section checks it on a week it was never tuned on.
 - One week and one judge is a small, soft sample. The earlier run (two weeks, Opus judging Opus, paste-all with chunks and our themes) pointed the same way. Each week is ranked once, in one shuffled order, so position bias is not averaged out.
+
+## Second check: a fresh week, on my machine (2026-11-24)
+
+The fix above was tuned on 2026-11-16, so its score there proves little. To check it on data it had never seen, I ran `bin/rails 'ab:run[2]'` from a fresh database on my own machine, with `LLM_JUDGE_MODEL=claude-sonnet-5-5`. That wrote and judged 2026-11-09 (never looked at while tuning) and wrote 2026-11-16 again from scratch.
+
+Blind judge: coverage / accuracy / specificity / usefulness, and rank.
+
+| Week | RAG | Paste whole week | No context | Cost: RAG vs paste-all |
+|---|---|---|---|---|
+| 2026-11-09 (fresh) | 4 / 3 / 5 / 4, 2nd | 5 / 4 / 5 / 5, 1st | 1 / 3 / 1 / 1, 3rd | $0.19 vs $0.40 |
+| 2026-11-16 (again) | 4 / 2 / 4 / 3, 2nd | 5 / 3 / 5 / 5, 1st | 1 / 2 / 1 / 1, 3rd | $0.18 vs $0.36 |
+| 2026-11-16 (published run above) | 5 / 4 / 5 / 4, 2nd | 5 / 4 / 5 / 5, 1st | 1 / 2 / 1 / 1, 3rd | $0.12 vs $0.35 |
+
+**What this says.**
+
+- **Paste-all ranked first in all three judged runs, and RAG second.** That part is stable.
+- **On the fresh week the fix partly held.** Coverage was 4, not the 3 of the first try, but not the 5 of the tuned week either. The judge says RAG "gives little weight to Browse, search and image regressions", which paste-all covered. A theme-shaped query still misses some big threads at a theme's edge.
+- **The judge is noisy.** The same week, the same code and the same judge model moved RAG from 5 / 4 / 5 / 4 to 4 / 2 / 4 / 3. The reports were rewritten from scratch, so this is the writer's noise and the judge's together, and it is about as large as the gaps between the arms. Read single scores loosely; the ranking is the steadier signal.
+- **Part of RAG's accuracy penalty is the judge's blind spot.** Both notes say RAG "invents" per-theme thread, post and people counts. Those counts come from SQL on the RAG arm's fact sheet (#25), which the judge does not see; it only gets the week's totals and thread titles. Some penalties are real, though: on 11-16 RAG placed the "Undo 26.10" thread in the previous week, likely misled by an earlier-week look-alike.
+- **Cost:** RAG cost about half of paste-all on these runs ($0.18 to $0.19 against $0.36 to $0.40), more than the published run's $0.12. I have not pinned down why RAG cost more here.
+- **The conclusion stays the same, stated more carefully:** while a week fits in a prompt, pasting it all writes a slightly better report. RAG comes reliably second at a third to a half of the cost, and its real case is scale.
 
 ## What to understand
 
