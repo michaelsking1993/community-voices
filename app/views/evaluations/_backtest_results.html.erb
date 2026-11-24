@@ -1,0 +1,15 @@
+<% overall = summary.overall %>
+<h3>Results</h3>
+<p><%= overall.happened %> of <%= overall.scored %> predictions came true, <%= overall.partly %> partly (hit rate <%= percent(overall.hit_rate) %>, counting "partly" as half). <%= overall.no_evidence %> could not be checked.</p>
+<table class="results">
+  <thead><tr><th></th><th>Predictions</th><th>Hit rate</th><th>Came true</th><th>Partly</th><th>Did not</th><th>Could not tell</th></tr></thead>
+  <tbody>
+    <% [ [ "By the confidence the report claimed", summary.by_confidence ], [ "By what the prediction was based on", summary.by_basis ] ].each do |title, group| %>
+      <tr class="group"><th colspan="7"><%= title %></th></tr>
+      <% group.each do |r| %>
+        <tr><th><%= r.label %></th><td><%= r.scored %></td><td><%= percent(r.hit_rate) %></td><td><%= r.happened %></td><td><%= r.partly %></td><td><%= r.did_not_happen %></td><td><%= r.no_evidence %></td></tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>
+<p class="muted">If "high" confidence does not hit more often than "low", the report's confidence is not worth reading. Basis: trend (activity rising), recurring (it happened before), event (a release or beta).</p>
