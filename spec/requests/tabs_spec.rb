@@ -8,6 +8,13 @@ RSpec.describe "Tabs", type: :request do
     expect(response.body).to match(%r{<a aria-current="page" href="/search">Search</a>})
   end
 
+  it "puts Data right after Community report" do
+    get root_path
+
+    labels = Nokogiri::HTML(response.body).css("nav.tabs a").map(&:text)
+    expect(labels.first(3)).to eq([ "Community report", "Data", "Search" ])
+  end
+
   it "keeps a single report under the Community report tab" do
     get root_path
 

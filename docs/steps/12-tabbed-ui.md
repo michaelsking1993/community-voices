@@ -7,10 +7,10 @@ One row of tabs on every page (`app/views/shared/_tabs.html.erb`):
 | Tab | Page | What it does |
 |---|---|---|
 | Community report | `/` | The weekly reports and the "Write report" button. Without `LLM_API_KEY` the page says so and disables the buttons; saved reports still open |
+| Data | `/data` | What is stored per week, and a button to crawl more (12 weeks by default) |
 | Search | `/search` | Type a question, get the forum chunks closest in meaning |
 | Evaluate | `/evaluation` | Buttons for the A/B test, backtest and retrieval eval, with cost, the data each needs, and each one's last output |
 | Charts | `/charts` | A/B test, backtest, embedding map, retrieval stats (step 11) |
-| Data | `/data` | What is stored per week, and a button to crawl more (12 weeks by default) |
 | Flashcards | `/flashcards` | "Coming soon" placeholder |
 
 Opening a single report keeps the Community report tab lit.

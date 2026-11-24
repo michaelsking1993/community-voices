@@ -1,10 +1,10 @@
 <%# One tab per page. A tab is "current" for every page in its group (a report belongs to the Community report tab). %>
 <% tabs = [
   [ "Community report", root_path, %w[reports] ],
+  [ "Data", data_path, %w[data] ],
   [ "Search", search_path, %w[searches] ],
   [ "Evaluate", evaluation_path, %w[evaluations] ],
   [ "Charts", charts_path, %w[charts] ],
-  [ "Data", data_path, %w[data] ],
   [ "Flashcards", flashcards_path, %w[flashcards] ],
   [ "How I built it", how_i_built_it_path, %w[how_i_built_it] ]
 ] %>
