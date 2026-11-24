@@ -2,8 +2,19 @@
 <h1>Community Voices</h1>
 <p class="muted">Weekly reports on the <a href="https://forums.ankiweb.net">Anki forums</a>, written by an LLM from retrieved, cited posts.</p>
 
+<ol class="muted">
+  <li>Each row is one full week of forum posts stored in the database.</li>
+  <li>Press <strong>Write report</strong> on a week. The LLM reads the posts it retrieves, writes what the community talked about plus predictions for the next week, and cites every claim. It takes about a minute and costs roughly $0.10 to $0.15.</li>
+  <li>Reload the page: the finished report appears as a link in the Reports column. Pressing the button again writes a new one next to it.</li>
+</ol>
+<p class="muted">Want to explore the posts yourself? Use <%= link_to "Search", search_path %>. To see how good the reports are, use <%= link_to "Evaluate", evaluation_path %>.</p>
+
 <% unless @configured %>
   <p class="notice">Set your LLM key in <code>.env</code> (see <code>.env.example</code>) to write new reports. Saved reports below still work.</p>
+<% end %>
+
+<% if @weeks.empty? %>
+  <p class="notice">No complete weeks are stored yet. Crawl the forum from the <%= link_to "Evaluate", evaluation_path %> tab, or run <code>bin/rails 'ingest:backfill[2]'</code>.</p>
 <% end %>
 
 <table>
@@ -13,6 +24,7 @@
       <tr>
         <td><%= week %></td>
         <td>
+          <% if @reports[week.start].blank? %><span class="muted">No report yet</span><% end %>
           <% Array(@reports[week.start]).each do |report| %>
             <% if report.status == "done" %>
               <%= link_to "#{report.arm} · #{l(report.created_at, format: :short)}", report_path(report) %>
