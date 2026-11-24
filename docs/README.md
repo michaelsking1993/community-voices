@@ -15,6 +15,7 @@ Read in this order. Each page is about one screen.
 9. [Backtest](steps/09-backtest.md): score past predictions against the week that followed, with no peeking
 10. [A/B test](steps/10-ab-test.md): no context vs paste the whole week vs RAG, judged three ways
 11. [Charts](steps/11-charts.md): Plotly through Stimulus, embedding map, retrieval stats
+12. [Tabbed UI and search](steps/12-tabbed-ui.md): one tab per page, semantic search box, flashcards placeholder
 
 ## Concepts
 
