@@ -14,10 +14,4 @@ RSpec.describe "Tabs", type: :request do
     expect(response.body).to match(%r{<a aria-current="page" href="/">Community report</a>})
   end
 
-  it "renders the flashcards placeholder" do
-    get flashcards_path
-
-    expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Coming soon")
-  end
 end

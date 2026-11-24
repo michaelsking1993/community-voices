@@ -1,4 +1,28 @@
 <% content_for(:title, "Flashcards · Community Voices") %>
 <h1>Flashcards</h1>
-<p class="notice">Coming soon.</p>
-<p class="muted">Planned: study cards for the RAG vocabulary I learned building this (and project facts such as "What is Anki?"), with a progress bar through the deck and a reset button.</p>
+<p class="muted">The <%= @cards.size %> terms I learned building this. Read the term, say what it means, then flip. Keys: space flips, left/right arrows move.</p>
+
+<div class="flashdeck" data-controller="flashcards" data-action="keydown@window->flashcards#key">
+  <p class="muted"><span data-flashcards-target="position"></span></p>
+  <div class="flashprogress"><div data-flashcards-target="bar"></div></div>
+
+  <% @cards.each do |card| %>
+    <button type="button" class="flashcard" hidden data-flashcards-target="card" data-action="flashcards#flip" aria-live="polite">
+      <span class="flashterm"><%= card_text(card[:term]) %></span>
+      <span class="flashback" hidden data-flashcards-target="back">
+        <strong>What it means</strong>
+        <span><%= card_text(card[:meaning]) %></span>
+        <strong>In this project</strong>
+        <span><%= card_text(card[:where]) %></span>
+      </span>
+    </button>
+  <% end %>
+
+  <div class="flashbuttons">
+    <button type="button" data-action="flashcards#previous">Previous</button>
+    <button type="button" data-action="flashcards#flip">Flip</button>
+    <button type="button" data-action="flashcards#next">Next</button>
+    <button type="button" data-action="flashcards#shuffle">Shuffle</button>
+    <button type="button" data-action="flashcards#reset">Reset</button>
+  </div>
+</div>

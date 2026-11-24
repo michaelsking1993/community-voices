@@ -56,4 +56,8 @@ Michael's first look found the UI confusing, so we went through it page by page:
 - Filters for category and date range (the retriever already takes a window).
 - Hybrid search: add keyword matching for exact terms such as error codes.
 - Show live progress on the Evaluate tab (it needs a manual refresh today).
-- Flashcards: study cards for the RAG vocabulary and project facts ("What is Anki?"), a progress bar through the deck and a reset button.
+- Flashcards: add project facts ("What is Anki?") to the deck, and spaced repetition (mark cards known or not) instead of a plain loop.
+
+## Flashcards tab (added later)
+
+The placeholder is now a working study view. The 30 terms from my vocabulary list live in `config/flashcards.yml` (term, meaning, where it appears in this project), so the app does not depend on my notes folder. `FlashcardsController` reads the file with `config_for`; the page renders every card hidden, and a small Stimulus controller (`flashcards_controller.js`) shows one at a time: click or press space to flip, arrow keys or buttons for previous/next, Shuffle (Fisher-Yates over a list of positions) and Reset (original order). No database, no API key, no network. (DECISIONS #59)
