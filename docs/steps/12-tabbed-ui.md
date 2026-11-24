@@ -31,7 +31,7 @@ Michael's first look found the UI confusing, so we went through it page by page:
 | Search intro was a paragraph of jargon | One plain sentence, example queries to click, the details folded away |
 | Charts' empty sections gave rake commands | They name the tab and button instead |
 | Browser-default buttons, some blue, some grey | One button style, and a clear disabled style |
-| Evaluation results were the terminal's text table | A one-sentence verdict, a readable table per evaluation and the judge's notes; raw text folded away (#60) |
+| Evaluation results were the terminal's text table | A one-sentence verdict, a readable table per evaluation and the judge's notes; raw text folded away (#61) |
 
 ## Why this way
 
