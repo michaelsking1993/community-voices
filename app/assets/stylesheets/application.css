@@ -55,3 +55,7 @@ summary { cursor: pointer; }
 
 /* the hidden attribute must win over the display rules above */
 .flashcard[hidden], .flashback[hidden] { display: none; }
+
+/* How I built it tab (README section) */
+.readme h3 { margin-top: 2rem; }
+.readme code { font-size: 0.9em; }
