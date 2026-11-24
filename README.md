@@ -175,7 +175,7 @@ The rest of this README is laid out like a system-design answer: the problem, th
 
 - **Every claim can be traced to a post.** A report that sounds right but cannot be checked is worse than no report.
 - **Numbers are exact.** Post and thread counts come from SQL, never from the model.
-- **A reviewer can run it from `git clone`.** Docker, one optional API key, and everything except writing reports works without one.
+- **No API key needed to explore.** Embeddings run locally, so crawling, search, the embedding map and retrieval stats all work without one. Only the LLM steps (naming themes, writing and judging reports) need a key.
 - **Re-running is cheap.** Only new or changed text is ever fetched or embedded.
 
 **What makes it interesting.** A week of posts *fits* in a modern context window. So RAG has to beat "paste the whole week into the prompt", not just "ask the model with nothing". And "next week" cannot be checked until it has happened, so predictions need a backtest to mean anything.
