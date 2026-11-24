@@ -1,0 +1,12 @@
+<%# One tab per page. A tab is "current" for every page in its group (a report belongs to the Community report tab). %>
+<% tabs = [
+  [ "Community report", root_path, %w[reports] ],
+  [ "Search", search_path, %w[searches] ],
+  [ "Charts", charts_path, %w[charts] ],
+  [ "Flashcards", flashcards_path, %w[flashcards] ]
+] %>
+<nav class="tabs" aria-label="Sections">
+  <% tabs.each do |label, path, controllers| %>
+    <%= link_to label, path, "aria-current": (controllers.include?(controller_name) ? "page" : nil) %>
+  <% end %>
+</nav>
