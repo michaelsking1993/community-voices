@@ -127,7 +127,7 @@ The later step pages end with "Check yourself" questions, like "Paste-all scored
 
 ### Small, tested pull requests, and decisions in writing
 
-The work landed as about 20 small pull requests, each one reviewed and merged before the next one built on it. CI runs a security scan, lint, the RSpec suite against a real pgvector Postgres, and a `docker compose` build, so the reviewer's path is tested too. The embedding model and the LLM are injected, so specs use fakes and never touch the network. [DECISIONS.md](DECISIONS.md) records every call with its trade-off, and when something I found later overturned a call, the new row says what it replaces (#49 supersedes part of #41).
+The work landed as about 30 small pull requests, each one reviewed and merged before the next one built on it. CI runs a security scan, lint, the RSpec suite against a real pgvector Postgres, and a `docker compose` build, so the reviewer's path is tested too. The embedding model and the LLM are injected, so specs use fakes and never touch the network. [DECISIONS.md](DECISIONS.md) records every call with its trade-off, and when something I found later overturned a call, the new row says what it replaces (#49 supersedes part of #41).
 
 ### Reviews and real data caught real problems
 
@@ -212,14 +212,14 @@ How the tables connect (key columns only; [`db/schema.rb`](db/schema.rb) has the
 
 ```mermaid
 erDiagram
-    topics ||--o{ posts : "has"
-    posts ||--o{ chunks : "split into"
-    themes ||--o{ theme_topics : "groups"
-    topics ||--o{ theme_topics : "belongs to"
-    retrievals ||--o{ retrieval_hits : "returned"
-    chunks ||--o{ retrieval_hits : "found as"
-    reports |o--o{ retrievals : "searched for"
-    reports |o--o{ judgements : "judged by"
+    topics ||--o{ posts : "have"
+    posts ||--o{ chunks : "are split into"
+    themes ||--o{ theme_topics : "include"
+    topics ||--o{ theme_topics : "are grouped in"
+    retrievals ||--o{ retrieval_hits : "return"
+    chunks ||--o{ retrieval_hits : "are returned as"
+    reports |o--o{ retrievals : "log"
+    reports |o--o{ judgements : "are scored in"
 
     topics {
         bigint discourse_id UK "the forum's own id"
@@ -238,7 +238,8 @@ erDiagram
         int position "unique with post_id"
         text content "150 words, 30 overlap, plus a header"
         string content_hash "skip re-embedding unchanged text"
-        vector_384 embedding "all-MiniLM-L6-v2, HNSW cosine index"
+        vector_384 embedding "HNSW cosine index"
+        string embedding_model "all-MiniLM-L6-v2"
     }
     themes {
         date week_start
