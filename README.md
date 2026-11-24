@@ -4,7 +4,9 @@ Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works 
 
 **What is Anki?** [Anki](https://apps.ankiweb.net) is the gold-standard app for spaced-repetition flashcards: it shows you each card just before you would forget it. Medical students, serious language learners and many others rely on it. It is open source and has a very active community, which makes its forum a rich, honest source of what users struggle with and ask for. I have used Anki heavily for the last 15 years, so it is a community I know well.
 
-**The headline result** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): RAG matched pasting the whole week into the prompt on coverage, accuracy and specificity, at about a third of the cost ($0.12 vs $0.35 per report). Paste-all edged it on usefulness (5 vs 4). With no posts at all, the LLM can only guess. The first RAG run missed a big thread; finding out why and fixing it is in [step 10](docs/steps/10-ab-test.md). So RAG gets nearly the same quality for a third of the cost while a week still fits in the prompt, and it is the only option once it does not.
+**The headline result, on one week so far** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): RAG matched pasting the whole week into the prompt on coverage, accuracy and specificity. Paste-all edged it on usefulness (5 vs 4). With no posts at all, the LLM can only guess. The first RAG run missed a big thread; finding out why and fixing it is in [step 10](docs/steps/10-ab-test.md). One week judged once is a promising sign, not proof.
+
+**Why RAG anyway: scale.** A week of this forum still fits in a prompt, so pasting it all is a strong baseline today. But pasting grows with the data (12 weeks would be about 750,000 tokens, past any context window), while retrieval grows with the question: the RAG prompt stays at about 17,000 tokens however much history is stored. It is also about a third of the cost ($0.12 vs $0.35 per report), but that is a bonus, not the reason.
 
 **How I built it:** I came in knowing RAG without embeddings and learned the rest by explaining every piece back before moving on. [Read how](#how-i-built-it-a-learners-approach).
 
@@ -74,7 +76,7 @@ I’m happy with the result. I wouldn’t call myself an expert in these topics,
 2. **Report.** Group the week's threads into 4 to 8 themes (k-means), have the LLM name each one, then use each theme's name and summary as a search query to pull the closest chunks from that week. Those chunks become numbered evidence ([E1], [E2] ...), and one LLM call writes the report and the predictions, citing the evidence for every claim. Plain Ruby then checks that every citation is real and every quote is word for word.
 3. **Evaluate.** An A/B test writes the same report three ways (paste the whole week, RAG, no context) and grades them with code checks, a support judge and a blind ranker that's a different model. A backtest goes back to old reports and checks whether their predictions came true.
 
-Paste-all came out sliiiiiightly better, but at 2.8 times the cost, and it stops working once the data no longer fits in a prompt. The juice isn't worth the squeeze. The diagrams and the reasoning behind each piece are [further down](#shape-of-the-system-and-why).
+Paste-all came out sliiiiiightly better. At $0.35 a report against $0.12, the cost gap alone isn't a big deal. The real problem is that pasting stops working once the data no longer fits in a prompt: 12 weeks of posts is about 750,000 tokens. RAG keeps the prompt the same size however much history there is, and that's why it's the right design here. The diagrams and the reasoning behind each piece are [further down](#shape-of-the-system-and-why).
 
 ### Plan before code
 
@@ -116,7 +118,7 @@ Every pull request was reviewed by a fresh Claude session that hadn't written it
 - **My own answer key was wrong.** One retrieval eval query "failed" because the retriever found a relevant thread I hadn't labelled. Hand labels are a starting point, not the truth.
 - **Real data broke my assumptions.** Forum post ids are only roughly in date order, so the first crawler stopped too early. And a half-crawled oldest week made activity look like it was rising. Both have specs now.
 
-### Claude wrote all of the code
+### What I owned
 
 I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) are my running notes; Claude drafted an entry after each step and I edited it.
 
