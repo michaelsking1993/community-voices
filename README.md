@@ -4,22 +4,9 @@ Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works 
 
 **What is Anki?** [Anki](https://apps.ankiweb.net) is the gold-standard app for spaced-repetition flashcards: it shows you each card just before you would forget it. Medical students, serious language learners and many others rely on it. It is open source and has a very active community, which makes its forum a rich, honest source of what users struggle with and ask for, the same kind of signal a company making flashcards for language learners would want to hear. I have used Anki heavily for the last 15 years, so I could also tell whether a report actually got the community right.
 
+**The headline result** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): RAG matched pasting the whole week into the prompt on coverage, accuracy and specificity, at about a third of the cost ($0.12 vs $0.35 per report). Paste-all edged it on usefulness (5 vs 4). With no posts at all, the LLM can only guess. The first RAG run missed a big thread; finding out why and fixing it is in [step 10](docs/steps/10-ab-test.md). So RAG gets nearly the same quality for a third of the cost while a week still fits in the prompt, and it is the only option once it does not.
+
 **See a run without installing anything:** [`docs/samples/`](docs/samples) has one week's report written three ways (RAG, paste the whole week, no context) and how they compared.
-
-## Where each part of the challenge lives
-
-| The challenge asks for | Where it is |
-|---|---|
-| An active online community | The [Anki forums](https://forums.ankiweb.net) (Discourse): ~310 posts in ~100 threads a week. Why: [DECISIONS #1](DECISIONS.md) |
-| A Community Voices Document: last week and next week | The Reports page, or `bin/rails report:build`: themes, cited claims, word-for-word quotes, and checkable predictions. [Step 7](docs/steps/07-report.md), [step 8](docs/steps/08-predictions.md) |
-| RAG, on a vector store | pgvector in Postgres, local embeddings, retrieval per theme with a date window, a distance cut-off and max 2 chunks per thread. [Step 4](docs/steps/04-chunk-and-embed.md), [step 5](docs/steps/05-retrieval.md) |
-| A flattened view of the embeddings | Charts page: a PCA map of every thread. [Step 11](docs/steps/11-charts.md) |
-| Stats on which embeddings are retrieved most | Charts page: every search is logged (`retrievals`, `retrieval_hits`). [Step 5](docs/steps/05-retrieval.md) |
-| Automated ingest, and handling too much data | A polite crawler, a weekly job (Mondays 6am), incremental chunk-and-embed. [Step 3](docs/steps/03-ingest.md) |
-| An A/B test: with and without RAG | Three arms (no context, paste the whole week, RAG), checked in code and by a blind judge: `bin/rails 'ab:run[1]'`, then the Charts page. [Step 10](docs/steps/10-ab-test.md) |
-| (extra) Did the predictions come true? | A backtest against the week that followed: `bin/rails 'backtest:run[4]'`. [Step 9](docs/steps/09-backtest.md) |
-
-**The A/B result, in short** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): pasting the whole week wrote the best report by a nose, at 2.8 times RAG's cost; RAG matched it on coverage, accuracy, specificity and how well its citations hold up. With no posts the LLM can only guess. The first RAG run missed a big thread; finding out why and fixing it is in [step 10](docs/steps/10-ab-test.md). RAG gets nearly the same quality for a third of the cost while a week fits in the prompt, and is the only option once it does not.
 
 ## Quick start
 
@@ -62,6 +49,79 @@ The app has six tabs: Community report (write and read reports), Search (a seman
 The Charts page (http://localhost:3000/charts) draws the A/B test, the backtest, the embedding map and the retrieval stats from whatever is in the database.
 
 Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model` to also run the real embedding model).
+
+## How I built it: a learner's approach
+
+I know Rails and Postgres well. RAG and vector databases, though, I only knew as buzzwords. So I treated this challenge as a chance to actually learn them, and I set the work up so that I understood each piece before it got merged, not after. The [step pages](docs/README.md) are basically the diary of that.
+
+### What I ended up with, in three steps
+
+1. **Ingest.** A weekly job crawls the Anki forum, cuts every post into 150-word chunks (with a 30-word overlap, so a sentence cut at a chunk boundary still shows up whole in one chunk), and embeds each chunk with a small local model that turns text into 384 numbers. Two chunks that mean similar things end up pointing in a similar direction, and Postgres's `<=>` operator measures that as a "distance".
+2. **Report.** Group the week's threads into 4 to 8 themes (k-means), have the LLM name each one, then use each theme's name and summary as a search query to pull the closest chunks from that week. Those chunks become numbered evidence ([E1], [E2] ...), and one LLM call writes the report and the predictions, citing the evidence for every claim. Plain Ruby then checks that every citation is real and every quote is word for word.
+3. **Evaluate.** An A/B test writes the same report three ways (paste the whole week, RAG, no context) and grades them with code checks, a support judge and a blind ranker that's a different model. A backtest goes back to old reports and checks whether their predictions came true.
+
+Paste-all came out sliiiiiightly better, but at 2.8 times the cost, and it stops working once the data no longer fits in a prompt. The juice isn't worth the squeeze. The diagrams and the reasoning behind each piece are [further down](#shape-of-the-system-and-why).
+
+### Plan before code
+
+Before writing any code, I sat down with an AI assistant and wrote a plan: which community, which stack, the shape of the pipeline, how to make the A/B test fair, and what to cut. I didn't build anything until I'd made every open decision in it. The [deferred list](#built-vs-deferred) was decided then, not when I ran out of time.
+
+### The same loop for every step
+
+The build was 12 steps, and every one of them went through the same five beats:
+
+| Beat | What happened |
+|---|---|
+| **Learn** | Get the idea explained before any code, then predict the result or explain it back |
+| **Decide** | Lay out the options and the trade-off, and write it down as a [DECISIONS.md](DECISIONS.md) row |
+| **Build** | One small pull request, with tests and green CI |
+| **Check** | Run it on real forum data and measure it, not just "it runs" |
+| **Document** | One page in [`docs/steps/`](docs/steps): what we built, why, how it works, what I learned, what's next |
+
+### Guess first, then measure
+
+Before any app code, I did a little [concepts lab](docs/steps/02-concepts-lab.md). I guessed which of six forum-style sentences were most alike, then we embedded them with the same model the app uses. I got the ranking right ("make the card text bigger" and "change the font size" closest, "font size" and "network error" furthest). But I guessed 0.8 for the pair about losing data on sync, and it came out 0.37.
+
+That miss turned into a rule for the whole project: no picking thresholds by feel. The retrieval cut-off (0.6), the number of themes and the trend distance (0.35) were each picked from a sweep on real data, and the sweeps are on the step pages.
+
+### Questions to check myself
+
+The later step pages end with "Check yourself" questions, like "Paste-all scored a bit higher than RAG. Why is RAG still the right design for this app?" They're there so I can explain each step, not just run it. The [concepts](docs/concepts) pages are the short explanations I wish I'd had when I started.
+
+### Understand every piece before moving on
+
+Near the end, I did one long, intensive walkthrough of the whole pipeline with the assistant, and I made sure I understood literally every piece of it before moving on. The rule was simple: we didn't move on until I could explain the current piece back in my own words, and then the assistant poked holes in my explanation until it was right. That covered what an embedding is and why 384 numbers can stand for meaning, how chunking works and why chunks overlap, how k-means places and moves its markers, what cosine distance measures and where the 0.6 cut-off comes from, why importing and reporting are separate jobs, and how citation grounding is checked in code instead of trusted to the model. The three-step summary above is the short version of what I ended up writing, and anything I couldn't explain yet became a question that fed the [concepts](docs/concepts) pages and my [notes](docs/notes.md).
+
+### Small, tested pull requests, and decisions in writing
+
+The work landed as about 20 small pull requests, each one reviewed and merged before the next one built on it. CI runs a security scan, lint, the RSpec suite against a real pgvector Postgres, and a `docker compose` build, so the reviewer's path is tested too. The embedding model and the LLM are injected, so specs use fakes and never touch the network. [DECISIONS.md](DECISIONS.md) records every call with its trade-off, and when something I found later overturned a call, the new row says what it replaces (#49 supersedes part of #41).
+
+### Reviews and real data caught real problems
+
+Every pull request was reviewed by a fresh AI session that hadn't written it, and then by me: tests first, code second. Here's some of what that, plus running on real data, caught:
+
+- **The A/B test was unfair to the rival.** The paste-all arm was pasting overlapping chunks, which inflated its cost by about 40%, and it was being handed our themes, which leaked the RAG pipeline into it. I rebuilt it as "each post once, no themes" and re-ran it (#49). RAG's cost advantage shrank from 3.1 times to 2.7 times, and the write-up says so.
+- **The judge was grading its own homework.** The judges defaulted to the same model that wrote the reports. `LLM_JUDGE_MODEL` now lets a different model judge, and the published run uses one (#44, #50).
+- **RAG missed the week's second-biggest thread.** The blind judge caught it. The thread was in the right theme, but every theme got 6 chunks no matter how big it was, and a query built from a theme's centre can't see a big thread sitting at its edge. Splitting the budget by theme size and always including each theme's busiest threads took the coverage score from 3 to 5, basically level with paste-all at about a third of the cost (#53). [Step 10](docs/steps/10-ab-test.md) keeps both runs side by side.
+- **My own answer key was wrong.** One retrieval eval query "failed" because the retriever found a relevant thread I hadn't labelled. Hand labels are a starting point, not the truth.
+- **Real data broke my assumptions.** Forum post ids are only roughly in date order, so the first crawler stopped too early. And a half-crawled oldest week made activity look like it was rising. Both have specs now.
+
+### Yes, AI wrote most of the code
+
+I built this with an AI coding assistant, and it wrote most of the code. I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) are my running notes; the assistant drafted an entry after each step and I edited it. Honestly, the assistant made me a lot faster, and the loop above is what made sure I still understand what was built and why.
+
+## Where each part of the challenge lives
+
+| The challenge asks for | Where it is |
+|---|---|
+| An active online community | The [Anki forums](https://forums.ankiweb.net) (Discourse): ~310 posts in ~100 threads a week. Why: [DECISIONS #1](DECISIONS.md) |
+| A Community Voices Document: last week and next week | The Reports page, or `bin/rails report:build`: themes, cited claims, word-for-word quotes, and checkable predictions. [Step 7](docs/steps/07-report.md), [step 8](docs/steps/08-predictions.md) |
+| RAG, on a vector store | pgvector in Postgres, local embeddings, retrieval per theme with a date window, a distance cut-off and max 2 chunks per thread. [Step 4](docs/steps/04-chunk-and-embed.md), [step 5](docs/steps/05-retrieval.md) |
+| A flattened view of the embeddings | Charts page: a PCA map of every thread. [Step 11](docs/steps/11-charts.md) |
+| Stats on which embeddings are retrieved most | Charts page: every search is logged (`retrievals`, `retrieval_hits`). [Step 5](docs/steps/05-retrieval.md) |
+| Automated ingest, and handling too much data | A polite crawler, a weekly job (Mondays 6am), incremental chunk-and-embed. [Step 3](docs/steps/03-ingest.md) |
+| An A/B test: with and without RAG | Three arms (no context, paste the whole week, RAG), checked in code and by a blind judge: `bin/rails 'ab:run[1]'`, then the Charts page. [Step 10](docs/steps/10-ab-test.md) |
+| (extra) Did the predictions come true? | A backtest against the week that followed: `bin/rails 'backtest:run[4]'`. [Step 9](docs/steps/09-backtest.md) |
 
 ## The problem, restated
 
@@ -270,7 +330,7 @@ Why this shape:
 
 ## Built vs deferred
 
-Everything the challenge asks for is built (see the table at the top). These were cut on purpose while planning, before any code, so the time went into evaluation instead.
+Everything the challenge asks for is built (see [where each part of the challenge lives](#where-each-part-of-the-challenge-lives)). These were cut on purpose while planning, before any code, so the time went into evaluation instead.
 
 | Deferred | What it is | Why not now | When it would be worth it |
 |---|---|---|---|
@@ -296,55 +356,3 @@ Smaller items are listed under "What I would do next" on each [step page](docs/R
 | **A filtered vector search comes back short** | Yes: a flaky spec and a short 1-week window ([step 5](docs/steps/05-retrieval.md)) | `hnsw.ef_search` raised to 200 for every search | pgvector 0.8 iterative scans |
 | **The embedding model is switched** | Not seen; found while reviewing | Every chunk is stamped with its model; the Embedder re-embeds other models' chunks, the Retriever compares only same-model vectors, and a length check runs before any work (#54) | Themes and the map can mix models until the next embed run |
 | **Growth** | 12 weeks is about 3,400 chunks and about 15 minutes to embed on CPU the first time | Incremental embedding (content hash), retrieval keeps the prompt small | A hosted or GPU embedder for a much larger forum |
-
-## How I built it: a learner's approach
-
-I know Rails and Postgres well. I did not know RAG or vector databases beyond the buzzwords. This challenge was a chance to learn both properly, so I set up the work so that I understood each piece before it was merged, not after. The [step pages](docs/README.md) are the diary of that.
-
-### Plan before code
-
-Before any code, I wrote a plan with an AI assistant: which community, which stack, the shape of the pipeline, how the A/B test would be fair, and what to cut. Nothing was built until I had made every open decision in it. The deferred list above was decided then, not when time ran out.
-
-### One loop for every step
-
-The build is 11 steps. Each one went through the same five beats:
-
-| Beat | What happened |
-|---|---|
-| **Learn** | The idea explained before any code, and I predicted the result or explained it back |
-| **Decide** | The options and the trade-off, written down as a [DECISIONS.md](DECISIONS.md) row |
-| **Build** | One small pull request with tests and green CI |
-| **Check** | Run on real forum data and measured, not just "it runs" |
-| **Document** | One page in [`docs/steps/`](docs/steps): what we built, why, how it works, what I learned, what next |
-
-### Guess, then measure
-
-The [concepts lab](docs/steps/02-concepts-lab.md) came before any app code. I guessed which of six forum-style sentences were most alike, then we embedded them with the model the app uses. My ranking was right ("make the card text bigger" and "change the font size" closest; "font size" and "network error" furthest), but I guessed 0.8 for the pair about losing data on sync, and it measured 0.37.
-
-That miss set a rule for the whole project: never pick a threshold by feel. The retrieval cut-off (0.6), the number of themes and the trend distance (0.35) were each chosen from a sweep on real data, and the sweeps are on the step pages.
-
-### Questions to check myself
-
-The later step pages end with "Check yourself" questions, such as "Paste-all scored a bit higher than RAG. Why is RAG still the right design for this app?" They are there so I can explain each step, not just run it. The [concepts](docs/concepts) pages are the short explanations I wanted when I started.
-
-### Understand every piece before moving on
-
-I also ran one long, intensive walkthrough of the whole pipeline with the assistant, and made sure I understood literally every piece of it before continuing. The rule was simple: we did not move on until I could explain the current piece back in my own words. That covered what an embedding is and why 384 numbers can stand for meaning, how chunking works and why chunks overlap, what cosine distance measures and where the 0.6 cut-off comes from, why importing and searching are separate jobs, and how citation grounding is checked in code instead of trusted to the model. Anything I could not explain yet became a question, and the answers fed the [concepts](docs/concepts) pages and my [notes](docs/notes.md).
-
-### Small, tested pull requests, and decisions in writing
-
-The work landed as about a dozen small pull requests, each reviewed and merged before the next one built on it. CI runs a security scan, lint, the RSpec suite against a real pgvector Postgres, and a `docker compose` build, so the reviewer's path is tested too. The embedding model and the LLM are injected, so specs use fakes and never touch the network. [DECISIONS.md](DECISIONS.md) records every call with its trade-off, and when a later finding overturned one, the new row says what it supersedes (#49 supersedes part of #41).
-
-### Reviews and real data caught real problems
-
-Pull requests were reviewed by a fresh AI session that had not written them, and then by me: tests first, code second. Some of what that, and running on real data, caught:
-
-- **The A/B test was unfair to the rival.** The paste-all arm pasted overlapping chunks, which inflated its cost by about 40%, and it was handed our themes, which leaked the RAG pipeline into it. I rebuilt it as "each post once, no themes" and re-ran it (#49). RAG's cost advantage shrank from 3.1 times to 2.7 times, and the write-up says so.
-- **The judge was marking its own homework.** The judges defaulted to the model that wrote the reports. `LLM_JUDGE_MODEL` now lets a different model judge, and the published run uses one (#44, #50).
-- **RAG missed the week's second-biggest thread.** The blind judge spotted it. The thread was in the right theme, but every theme got 6 chunks however big it was, and a query built from a theme's centre cannot see a big thread at its edge. Sharing the budget by theme size and always including each theme's busiest threads took the judge's coverage score from 3 to 5, nearly level with paste-all at about a third of the cost (#53). Step 10 keeps both runs side by side.
-- **My own answer key was wrong.** One retrieval eval query "failed" because the retriever found a relevant thread I had not labelled. Hand labels are a starting point, not ground truth.
-- **Real data broke assumptions.** Forum post ids are only roughly in date order, so the first crawler stopped early. A half-crawled oldest week made activity look like it was rising. Both have specs now.
-
-### Openly AI-assisted
-
-I built this with an AI coding assistant, which wrote most of the code. I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) are my running notes in my own words; the assistant drafted an entry after each step and I edited it. The honest summary is that the assistant made me faster, and the loop above made sure I still understand what was built and why.
