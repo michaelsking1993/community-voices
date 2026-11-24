@@ -78,5 +78,5 @@ Short notes from each step, drafted by Claude as we went. For the whole pipeline
 
 ## Step 12: tabbed UI
 
-- Everything a reviewer needs is in the interface, not only rake tasks: Community report, Search, Evaluate (buttons for the A/B test, backtest and retrieval eval), Charts, Data (crawl more), Flashcards and How I built it.
+- Everything a reviewer needs is in the interface, not only rake tasks: Community report, Data (crawl more), Search, Evaluate (buttons for the A/B test, backtest and retrieval eval), Charts, Flashcards and How I built it.
 - Search is the retriever with a text box: the same vectors the report uses, no LLM key needed.

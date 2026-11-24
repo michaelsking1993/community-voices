@@ -7,10 +7,10 @@ One row of tabs on every page (`app/views/shared/_tabs.html.erb`):
 | Tab | Page | What it does |
 |---|---|---|
 | Community report | `/` | The weekly reports and the "Write report" button. Without `LLM_API_KEY` the page says so and disables the buttons; saved reports still open |
+| Data | `/data` | What is stored per week, and a button to crawl more (12 weeks by default) |
 | Search | `/search` | Type a question, get the forum chunks closest in meaning |
 | Evaluate | `/evaluation` | Buttons for the A/B test, backtest and retrieval eval, with cost, the data each needs, and each one's last output |
 | Charts | `/charts` | A/B test, backtest, embedding map, retrieval stats (step 11) |
-| Data | `/data` | What is stored per week, and a button to crawl more (12 weeks by default) |
 | Flashcards | `/flashcards` | "Coming soon" placeholder |
 
 Opening a single report keeps the Community report tab lit.
@@ -61,4 +61,4 @@ Michael's first look found the UI confusing, so we went through it page by page:
 
 ## Flashcards tab (added later)
 
-The placeholder is now a working study view. The 30 terms from my vocabulary list live in `config/flashcards.yml` (term, meaning, where it appears in this project), so the app does not depend on my notes folder. `FlashcardsController` reads the file with `config_for`; the page renders every card hidden, and a small Stimulus controller (`flashcards_controller.js`) shows one at a time: click or press space to flip, arrow keys or buttons for previous/next, Shuffle (Fisher-Yates over a list of positions) and Reset (original order). No database, no API key, no network. (DECISIONS #59)
+The placeholder is now a working study view. The 28 terms from my vocabulary list live in `config/flashcards.yml` (term, meaning, where it appears in this project), so the app does not depend on my notes folder. `FlashcardsController` reads the file with `config_for`; the page renders every card hidden, and a small Stimulus controller (`flashcards_controller.js`) shows one at a time: click or press space to flip, arrow keys or buttons for previous/next, Shuffle (Fisher-Yates over a list of positions) and Reset (original order). No database, no API key, no network. (DECISIONS #59)

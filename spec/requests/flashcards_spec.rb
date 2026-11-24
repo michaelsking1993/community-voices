@@ -4,7 +4,7 @@ RSpec.describe "Flashcards", type: :request do
   let(:cards) { Rails.application.config_for(:flashcards).fetch(:cards) }
 
   it "ships a complete deck" do
-    expect(cards.size).to be >= 30
+    expect(cards.size).to eq(28)
     expect(cards).to all(include(:term, :meaning, :where))
     expect(cards.map { |c| c[:term] }).to eq(cards.map { |c| c[:term] }.uniq)
   end

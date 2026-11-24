@@ -1,6 +1,6 @@
 <% content_for(:title, "Flashcards · Community Voices") %>
 <h1>Flashcards</h1>
-<p class="muted">The <%= @cards.size %> terms I learned building this. Read the term, say what it means, then flip. Keys: space flips, left/right arrows move.</p>
+<p class="muted">The <%= @cards.size %> terms that were new to me while building this. Super dumb flashcard implementation, just a toy. Read the term, say what it means, then flip. Keys: space flips, left/right arrows move.</p>
 
 <div class="flashdeck" data-controller="flashcards" data-action="keydown@window->flashcards#key">
   <p class="muted"><span data-flashcards-target="position"></span></p>
