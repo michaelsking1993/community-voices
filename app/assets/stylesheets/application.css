@@ -56,3 +56,7 @@ summary { cursor: pointer; }
 .results tbody th { font-weight: normal; }
 .results tr.group th { font-weight: 600; padding-top: 1rem; border-bottom: none; }
 h3 { margin: 1.25rem 0 0.25rem; }
+
+/* How I built it tab (README section) */
+.readme h3 { margin-top: 2rem; }
+.readme code { font-size: 0.9em; }

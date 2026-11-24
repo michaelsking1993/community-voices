@@ -55,6 +55,7 @@ Reports written by `claude-opus-5-5`; support judge and blind ranker `claude-son
 - **The fix:** share the chunk budget by each theme's size, and always give each theme's 2 busiest threads (counted in SQL) their chunk closest to the query (vectors). 17% more input tokens; the report came out shorter, so it cost slightly less. Coverage went from 3 to 5 and RAG now matches paste-all on three of the four scores.
 - **Paste-all is still ranked first**, on usefulness (5 vs 4), at **2.8 times RAG's cost** and 3.7 times its input tokens. While a week fits in the prompt, pasting it all is a strong, simple baseline. RAG's case is cost and scale: pasting grows with the data (12 weeks would be ~750,000 tokens, past any context window), retrieval grows with the question.
 - The judge still counts several "invented" specifics in each grounded report. For RAG some are things its facts cannot confirm (trend counts, earlier-week references): the judge only sees the week's totals and thread titles.
+- **The fix was checked on the week that exposed the problem.** The budget-by-size change (#53) was designed after seeing this week's miss, and then re-run on this same week, so its coverage gain is not yet proven on data it has not seen. The honest next step is the A/B on a week the fix was never looked at.
 - One week and one judge is a small, soft sample. The earlier run (two weeks, Opus judging Opus, paste-all with chunks and our themes) pointed the same way. Each week is ranked once, in one shuffled order, so position bias is not averaged out.
 
 ## What to understand

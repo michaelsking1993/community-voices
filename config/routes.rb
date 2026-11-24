@@ -16,5 +16,6 @@ Rails.application.routes.draw do
   resource :evaluation, only: :show
   resources :job_runs, only: :create
   resource :flashcards, only: :show
+  get "how-i-built-it" => "how_i_built_it#show", as: :how_i_built_it
   root "reports#index"
 end

@@ -1,0 +1,6 @@
+<% content_for(:title, "How I built it · Community Voices") %>
+<h1><%= @section.title %></h1>
+<p class="muted">This page is read live from the "How I built it" section of <%= link_to "README.md", "#{Readme::Section::REPO_URL}#how-i-built-it-a-learners-approach" %>, so the two never drift.</p>
+<article class="readme">
+  <%= @section.html.html_safe %><%# README.md is ours, and Redcarpet's filter_html drops any raw HTML in it %>
+</article>
