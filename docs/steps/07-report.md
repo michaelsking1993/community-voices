@@ -2,7 +2,7 @@
 
 ## What we built
 
-`Reports::Builder` writes a week's Community Voices report. For each of the 6 biggest themes it retrieves 6 chunks from that week and 3 look-alikes from the 12 weeks before, numbers them `[E1]`, `[E2]`..., and asks the LLM for a structured report: a headline, an overview, and a section per theme with cited claims and word-for-word quotes. `Reports::Grounding` then checks every citation and quote in code. Reports are saved with their evidence, checks, tokens and cost, and shown at `/reports` (with a Markdown download).
+`Reports::Builder` writes a week's Community Voices report. For each of the 6 biggest themes it retrieves chunks from that week (6 each at first; since step 10, a budget shared by theme size plus each theme's 2 busiest threads, see DECISIONS #53) and 3 look-alikes from the 12 weeks before, numbers them `[E1]`, `[E2]`..., and asks the LLM for a structured report: a headline, an overview, and a section per theme with cited claims and word-for-word quotes. `Reports::Grounding` then checks every citation and quote in code. Reports are saved with their evidence, checks, tokens and cost, and shown at `/reports` (with a Markdown download).
 
 ## Why this way
 

@@ -17,7 +17,7 @@ Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works 
 | An A/B test: with and without RAG | Three arms (no context, paste the whole week, RAG), checked in code and by a blind judge: `bin/rails 'ab:run[1]'`, then the Charts page. [Step 10](docs/steps/10-ab-test.md) |
 | (extra) Did the predictions come true? | A backtest against the week that followed: `bin/rails 'backtest:run[4]'`. [Step 9](docs/steps/09-backtest.md) |
 
-**The A/B result, in short** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): pasting the whole week wrote the best report, at 2.7 times RAG's cost; RAG's cited sentences were as well supported, but it missed one big thread. With no posts the LLM can only guess. RAG is the cheaper way to most of the quality while a week fits in the prompt, and the only way once it does not.
+**The A/B result, in short** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): pasting the whole week wrote the best report by a nose, at 2.8 times RAG's cost; RAG matched it on coverage, accuracy, specificity and how well its citations hold up. With no posts the LLM can only guess. The first RAG run missed a big thread; finding out why and fixing it is in [step 10](docs/steps/10-ab-test.md). RAG gets nearly the same quality for a third of the cost while a week fits in the prompt, and is the only option once it does not.
 
 ## Quick start
 

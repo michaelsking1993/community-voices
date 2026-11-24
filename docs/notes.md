@@ -58,7 +58,9 @@ My notes for the README and the interview, in my own words. The AI assistant add
 ## Step 10: A/B test
 
 - Fair rerun (2026-11-24, Sonnet judging Opus, paste-all = each post once, no themes): RAG $0.13 and 15k tokens a report; paste-all $0.35 and 64k; no context $0.03.
-- Paste-all wrote the better report (judge 5/4/5/5 vs RAG 3/3/4/3); RAG missed the week's second-biggest thread. Cited sentences were equally supported (0.80 vs 0.78). Honest framing: RAG wins on cost and scale, not on quality while a week fits in the prompt.
+- Paste-all wrote the better report (judge 5/4/5/5 vs RAG 3/3/4/3); RAG missed the week's second-biggest thread. Cited sentences were equally supported (0.80 vs 0.78).
+- Why it missed: every theme got 6 chunks however big, and a query built from the theme's centre is blind to a big thread at its edge. Fix: share the chunk budget by theme size, and always include each theme's 2 busiest threads (SQL picks the thread, vectors pick the chunk). Rerun: RAG 5/4/5/4, nearly level with paste-all, at $0.12 vs $0.35.
+- Honest framing: RAG wins on cost and scale; on quality it now nearly matches pasting, while a week still fits in the prompt.
 - No context: nothing to cite, judge gave 1/5 on coverage.
 
 ## Step 11: charts
