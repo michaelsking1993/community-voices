@@ -36,17 +36,23 @@ module Discourse
 
     private
 
+    # Retries rate limits (waiting as long as the server asks), server errors
+    # and network failures, with growing waits. Anything else raises.
     def get(path, params, attempt: 1)
       @throttle.wait!
       response = @http.get(path, params)
       return response.body if response.success?
+      raise Error, "GET #{path} failed with HTTP #{response.status}" unless retryable?(response.status) && attempt <= MAX_RETRIES
 
-      if response.status == 429 && attempt <= MAX_RETRIES
-        @sleeper.call(response.headers["Retry-After"].to_i.clamp(1, 60))
-        return get(path, params, attempt: attempt + 1)
-      end
+      @sleeper.call(response.status == 429 ? response.headers["Retry-After"].to_i.clamp(1, 60) : 2**attempt)
+      get(path, params, attempt: attempt + 1)
+    rescue Faraday::TimeoutError, Faraday::ConnectionFailed => e
+      raise Error, "GET #{path} failed: #{e.message}" if attempt > MAX_RETRIES
 
-      raise Error, "GET #{path} failed with HTTP #{response.status}"
+      @sleeper.call(2**attempt)
+      get(path, params, attempt: attempt + 1)
     end
+
+    def retryable?(status) = status == 429 || status >= 500
   end
 end

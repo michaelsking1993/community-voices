@@ -7,7 +7,9 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      # Only for running Rails on your machine. If you already run Postgres
+      # on 5432, use another port: DB_PORT=5433 docker compose up
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -22,10 +24,12 @@ services:
     command: bin/setup
     environment:
       DB_HOST: db
+      DB_PORT: 5432 # inside the compose network, whatever the host port
       BACKFILL_WEEKS: ${BACKFILL_WEEKS:-2}
       LLM_PROVIDER: ${LLM_PROVIDER:-anthropic}
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-}
+      LLM_JUDGE_MODEL: ${LLM_JUDGE_MODEL:-}
       BINDING: 0.0.0.0
     ports:
       - "3000:3000"
