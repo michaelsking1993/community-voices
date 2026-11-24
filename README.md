@@ -46,7 +46,7 @@ With Docker, put `docker compose exec app` in front of each command (for example
 | `bin/rails 'ab:run[1]'` | A/B test last week: three reports, checks, a support judge and a blind ranking (about $0.65). Set `LLM_JUDGE_MODEL` to judge with a different model |
 | `bin/rails 'backtest:run[4]'` | Score the last 4 weeks' predictions against what happened next |
 
-The app has six tabs: Community report (write and read reports), Search (a semantic search box over the stored posts, no LLM key needed), Evaluate (buttons for the A/B test, backtest and retrieval eval), Charts (their results), Data (what is stored, and a button to crawl more, e.g. 12 weeks for the full demo) and Flashcards (study cards for the vocabulary I learned building this: flip, previous/next, shuffle and reset; no database or key needed, the deck is `config/flashcards.yml`). A line under the tabs always says how much forum data the app holds. [Step 12](docs/steps/12-tabbed-ui.md)
+The app has seven tabs: Community report (write and read reports), Search (a semantic search box over the stored posts, no LLM key needed), Evaluate (buttons for the A/B test, backtest and retrieval eval), Charts (their results), Data (what is stored, and a button to crawl more, e.g. 12 weeks for the full demo) and Flashcards (study cards for the vocabulary I learned building this: flip, previous/next, shuffle and reset; no database or key needed, the deck is `config/flashcards.yml`) and How I built it (the section of this README with that name). A line under the tabs always says how much forum data the app holds. [Step 12](docs/steps/12-tabbed-ui.md)
 
 The Charts page (http://localhost:3000/charts) draws the A/B test, the backtest, the embedding map and the retrieval stats from whatever is in the database.
 
@@ -159,7 +159,7 @@ The rest of this README is laid out like a system-design answer: the problem, th
 
 ## Questions I asked, and the assumptions I made
 
-Every call is in [`DECISIONS.md`](DECISIONS.md) (58 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
+Every call is in [`DECISIONS.md`](DECISIONS.md) (60 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
 
 - **"A week" is Monday to Monday** (#27), so "last week" and "next week" are unambiguous, and partly crawled weeks are left out of counts and trends (#51).
 - **The community is its public posts.** Private messages and staff-only posts are not in the public API, so our post counts are lower than the forum's own (topic counts match within 2; [step 3](docs/steps/03-ingest.md)).
