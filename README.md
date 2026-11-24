@@ -2,9 +2,11 @@
 
 Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works out what people talked about, and writes a cited "Community Voices" report: what happened last week and what is likely to come up next week. It uses retrieval-augmented generation (RAG) over a pgvector table in Postgres.
 
-**What is Anki?** [Anki](https://apps.ankiweb.net) is the gold-standard app for spaced-repetition flashcards: it shows you each card just before you would forget it. Medical students, serious language learners and many others rely on it. It is open source and has a very active community, which makes its forum a rich, honest source of what users struggle with and ask for, the same kind of signal a company making flashcards for language learners would want to hear. I have used Anki heavily for the last 15 years, so I could also tell whether a report actually got the community right.
+**What is Anki?** [Anki](https://apps.ankiweb.net) is the gold-standard app for spaced-repetition flashcards: it shows you each card just before you would forget it. Medical students, serious language learners and many others rely on it. It is open source and has a very active community, which makes its forum a rich, honest source of what users struggle with and ask for. I have used Anki heavily for the last 15 years, so it is a community I know well.
 
 **The headline result** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): RAG matched pasting the whole week into the prompt on coverage, accuracy and specificity, at about a third of the cost ($0.12 vs $0.35 per report). Paste-all edged it on usefulness (5 vs 4). With no posts at all, the LLM can only guess. The first RAG run missed a big thread; finding out why and fixing it is in [step 10](docs/steps/10-ab-test.md). So RAG gets nearly the same quality for a third of the cost while a week still fits in the prompt, and it is the only option once it does not.
+
+**How I built it:** I came in knowing RAG without embeddings and learned the rest by explaining every piece back before moving on. [Read how](#how-i-built-it-a-learners-approach).
 
 **See a run without installing anything:** [`docs/samples/`](docs/samples) has one week's report written three ways (RAG, paste the whole week, no context) and how they compared.
 
@@ -18,11 +20,11 @@ cp .env.example .env    # then set LLM_API_KEY in .env, before the next line
 docker compose up
 ```
 
-That starts Postgres (with pgvector), crawls and embeds the last 2 weeks of the forum (about a minute; the first run also downloads a ~90 MB model), and serves the app on http://localhost:3000. For the full demo (A/B test, backtest, trends) start with 12 weeks instead, about 5 minutes: `BACKFILL_WEEKS=12 docker compose up`.
+That starts Postgres (with pgvector), crawls and embeds the last 2 weeks of the forum (about a minute; the first run also downloads a ~90 MB model), and serves the app on http://localhost:3000. For the full demo (A/B test, backtest, trends), open the Data tab and press "Crawl the forum" (it defaults to 12 weeks, about 5 minutes).
 
 - **Changed `.env`?** Run `docker compose up` again (not `restart`, which keeps the old settings).
 - **Port 5432 already taken** by a local Postgres? `DB_PORT=5433 docker compose up`.
-- **The forum is unreachable?** The app still starts with what is stored; retry with the ingest command below.
+- **The forum is unreachable?** The app still starts with what is stored; press "Crawl the forum" on the Data tab to try again.
 
 Prefer Ruby on your machine? Run only the database in Docker, then:
 
@@ -54,7 +56,7 @@ Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model
 
 This was a fascinating project to me. In a personal project, I’ve been using RAG to compile a learner’s dictionary: 1) lemmatize a word to its base word, 2) find all existing dictionary entries (senses) for that base word in our dictionary, 3) pass the word, the context it was found in, and the existing dictionary entries to the model for it to determine whether one matches - if so, say which one, otherwise, give a 0, which prompts us to generate a fresh entry and associate it with the lemma.
 
-That is RAG, but the retrieval step is an exact lookup by lemma, so it needs no embeddings. Here I had to find posts by *meaning*, which is where vectors earn their keep. Therefore, building this pipeline was very instructive to me.
+That is RAG, but each lemma only has a handful of senses, so an exact lookup finds them all and every one fits in the prompt. That is basically "paste-all", and it needs no embeddings. Here, a week has hundreds of posts and I had to find the ones that matter by *meaning*, which is where vectors earn their keep. Therefore, building this pipeline was very instructive to me.
 
 Here is how I did it:
 
@@ -76,7 +78,7 @@ Paste-all came out sliiiiiightly better, but at 2.8 times the cost, and it stops
 
 ### Plan before code
 
-Before writing any code, I sat down with an AI assistant and wrote a plan: which community, which stack, the shape of the pipeline, how to make the A/B test fair, and what to cut. I didn't build anything until I'd made every open decision in it. The [deferred list](#built-vs-deferred) was decided then, not when I ran out of time.
+Before writing any code, I sat down with Claude and wrote a plan: which community, which stack, the shape of the pipeline, how to make the A/B test fair, and what to cut. I didn't build anything until I'd made every open decision in it. The [deferred list](#built-vs-deferred) was decided then, not when I ran out of time.
 
 ### The same loop for every step
 
@@ -106,7 +108,7 @@ The work landed as about 20 small pull requests, each one reviewed and merged be
 
 ### Reviews and real data caught real problems
 
-Every pull request was reviewed by a fresh AI session that hadn't written it, and then by me: tests first, code second. Here's some of what that, plus running on real data, caught:
+Every pull request was reviewed by a fresh Claude session that hadn't written it, and then by me: tests first, code second. Here's some of what that, plus running on real data, caught:
 
 - **The A/B test was unfair to the rival.** The paste-all arm was pasting overlapping chunks, which inflated its cost by about 40%, and it was being handed our themes, which leaked the RAG pipeline into it. I rebuilt it as "each post once, no themes" and re-ran it (#49). RAG's cost advantage shrank from 3.1 times to 2.7 times, and the write-up says so.
 - **The judge was grading its own homework.** The judges defaulted to the same model that wrote the reports. `LLM_JUDGE_MODEL` now lets a different model judge, and the published run uses one (#44, #50).
@@ -114,9 +116,9 @@ Every pull request was reviewed by a fresh AI session that hadn't written it, an
 - **My own answer key was wrong.** One retrieval eval query "failed" because the retriever found a relevant thread I hadn't labelled. Hand labels are a starting point, not the truth.
 - **Real data broke my assumptions.** Forum post ids are only roughly in date order, so the first crawler stopped too early. And a half-crawled oldest week made activity look like it was rising. Both have specs now.
 
-### Yes, AI wrote most of the code
+### Claude wrote all of the code
 
-I built this with an AI coding assistant, and it wrote most of the code. I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) are my running notes; the assistant drafted an entry after each step and I edited it. Honestly, the assistant made me a lot faster, and the loop above is what made sure I still understand what was built and why.
+I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) are my running notes; Claude drafted an entry after each step and I edited it.
 
 ## Where each part of the challenge lives
 
