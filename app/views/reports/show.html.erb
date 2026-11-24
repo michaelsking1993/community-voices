@@ -14,7 +14,7 @@
     <p><%= with_citations(section["body"], @evidence) %></p>
     <% section.fetch("quotes", []).each do |quote| %>
       <% item = @evidence[quote["evidence"]] %>
-      <blockquote>“<%= quote["text"] %>” <% if item %><%= link_to item.title, item.url, class: "muted" %><% end %></blockquote>
+      <blockquote>“<%= quote["text"] %>” <% if item %><%= link_to item.title, item.url, class: "muted", target: "_blank", rel: "noopener" %><% end %></blockquote>
     <% end %>
   </section>
 <% end %>
