@@ -1,6 +1,6 @@
 <% content_for(:title, "Search · Community Voices") %>
 <h1>Search by meaning</h1>
-<p class="muted">Finds forum posts whose <em>meaning</em> is close to your question, even when they share no words with it. Your query becomes a vector (computed locally, no API key needed) and Postgres returns the nearest stored chunks. Same rules as the report: nothing farther than <%= Search::Retriever::MAX_DISTANCE %> cosine distance (smaller is closer), at most <%= Search::Retriever::PER_TOPIC %> chunks per thread.</p>
+<p class="muted">Finds forum posts whose <em>meaning</em> is close to your question, even when they share no words with it. Your query becomes a vector (computed locally, no API key needed) and Postgres returns the nearest stored chunks. Same rules as the report: nothing farther than <%= Search::Retriever::MAX_DISTANCE %> cosine distance (smaller is closer), at most <%= Search::Retriever::PER_TOPIC %> chunks per thread (so one long thread cannot fill the page). Every match inside the cut-off is listed, up to <%= Search::Retriever::CANDIDATES %>.</p>
 
 <%= form_with url: search_path, method: :get, class: "search-form" do |f| %>
   <%= f.search_field :q, value: @query, placeholder: "e.g. my decks disappeared after syncing", "aria-label": "Search query", autofocus: true %>
