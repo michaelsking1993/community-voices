@@ -30,5 +30,7 @@ Read in this order. Each page is about one screen.
 
 ## Also
 
+- [samples/](samples): one week's report written three ways, and how they compared
+
 - [DECISIONS.md](../DECISIONS.md): every call, its options and trade-off
 - [notes.md](notes.md): running notes for the README and interview

@@ -57,8 +57,8 @@ My notes for the README and the interview, in my own words. The AI assistant add
 
 ## Step 10: A/B test
 
-- RAG $0.15 and 15k tokens a report; paste-all $0.46 and 88k; no context $0.03.
-- Paste-all was slightly better on quality; RAG gets most of it at a third of the cost, and keeps working when the data stops fitting in the prompt. Honest framing: RAG wins on cost and scale, not on quality for a one-week corpus.
+- Fair rerun (2026-11-24, Sonnet judging Opus, paste-all = each post once, no themes): RAG $0.13 and 15k tokens a report; paste-all $0.35 and 64k; no context $0.03.
+- Paste-all wrote the better report (judge 5/4/5/5 vs RAG 3/3/4/3); RAG missed the week's second-biggest thread. Cited sentences were equally supported (0.80 vs 0.78). Honest framing: RAG wins on cost and scale, not on quality while a week fits in the prompt.
 - No context: nothing to cite, judge gave 1/5 on coverage.
 
 ## Step 11: charts
