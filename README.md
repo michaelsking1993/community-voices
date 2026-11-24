@@ -95,6 +95,12 @@ Every call is in [`DECISIONS.md`](DECISIONS.md) (52 rows: the question, the opti
 
 ## Entities
 
+**The names come from the forum.** forums.ankiweb.net runs on [Discourse](https://www.discourse.org/), and `topics` and `posts` keep Discourse's own names so each table maps one to one onto its API:
+
+- A **topic** is a thread: a title, a category and a list of posts. ("Topic" here does not mean "subject"; that is what a theme is.)
+- A **post** is any message in a thread. Discourse has no separate "comment": the opening message is post 1 and every reply is another post (2, 3, ...).
+- A **theme** is ours, not Discourse's: a group of one week's threads about the same thing, computed by clustering.
+
 | Table | What it holds |
 |---|---|
 | `topics` | One row per forum thread: title, slug, category ("Anki › FSRS") |
