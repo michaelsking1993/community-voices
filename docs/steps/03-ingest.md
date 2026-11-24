@@ -41,11 +41,11 @@ Topics match within 2. Posts are lower most likely because the forum's own count
 
 **How big is a week?** `bin/rails ingest:stats` says one full week is about 310-340 posts and roughly 45,000-55,000 tokens (at ~4 characters per token). That fits in a large context window, which is exactly why the A/B test has a "paste everything" arm: RAG has to beat that, not just beat nothing.
 
-## What I learned
+## Key takeaways
 
 Ingestion is the "E" and "L" of ETL: extract from an API, load into tables. The important properties are *politeness* (rate limits), *idempotency* (upserts keyed on the source's id, so any run can be repeated), and *windowing* (only fetch what is new, with a small overlap so nothing falls through the gap). The "T" (cleaning, chunking, embedding) is step 4.
 
-## What I would do next
+## Possible next steps
 
 - Track post edits: we re-fetch only the last 8 days, so an edit to an older post is missed. Discourse exposes `updated_at`; a periodic re-crawl could pick those up.
 - Cache raw responses to disk so re-running the transform never needs the network. Deferred because a full re-crawl of 12 weeks takes only ~2 minutes.

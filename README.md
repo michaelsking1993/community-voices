@@ -10,10 +10,11 @@ Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works 
 
 **How I built it:** I came in knowing RAG without embeddings and learned the rest by explaining every piece back before moving on. [Read how](#how-i-built-it-a-learners-approach).
 
-**Reading guide.** There is a lot of documentation here, because every build step left a page behind. You don't need to read it all:
+**Reading guide.** There is a lot of documentation here, written alongside each build step. None of it is required reading:
 - **5 minutes:** this intro and [How I built it](#how-i-built-it-a-learners-approach).
 - **15 minutes:** add [step 5, retrieval](docs/steps/05-retrieval.md) and [step 10, the A/B test](docs/steps/10-ab-test.md), plus the 7 "Start here" calls at the top of [DECISIONS.md](DECISIONS.md).
-- **Everything else** ([step pages](docs/README.md), [concepts](docs/concepts), the rest of DECISIONS.md) is reference.
+- **Optional:** [the pipeline in my own words](docs/my-explanation.md), the write-up I did once I understood every piece.
+- **Everything else** ([step pages](docs/README.md), [concepts](docs/concepts), the rest of DECISIONS.md) is reference, there if you want to dig into one part.
 
 **See a run without installing anything:** [`docs/samples/`](docs/samples) has one week's report written three ways (RAG, paste the whole week, no context) and how they compared.
 
@@ -97,9 +98,9 @@ The build was 12 steps, and every one of them went through the same five beats:
 | **Decide** | Lay out the options and the trade-off, and write it down as a [DECISIONS.md](DECISIONS.md) row |
 | **Build** | One small pull request, with tests and green CI |
 | **Check** | Run it on real forum data and measure it, not just "it runs" |
-| **Document** | One page in [`docs/steps/`](docs/steps): what we built, why, how it works, what I learned, what's next |
+| **Document** | One page in [`docs/steps/`](docs/steps): what we built, why, how it works, key takeaways, possible next steps |
 
-That Document beat is why there's so much documentation: it's a by-product of how I learned, one page per step written as I went. The [reading guide](#community-voices) at the top says where to start.
+That's why there's so much documentation: a page was written alongside every step. It's reference, not required reading. Where my learning actually landed is [the pipeline in my own words](docs/my-explanation.md), a write-up I did at the end once I could explain every piece without looking.
 
 ### Guess first, then measure
 
@@ -359,7 +360,7 @@ Everything the challenge asks for is built (see [where each part of the challeng
 | **PDF export** | A printable file | The challenge accepts a web page. Reports render in the app and download as Markdown | When readers want a file to send around |
 | **Automatic theme counting** | Let the data choose the number of themes (HDBSCAN, or agglomerative clustering with a distance threshold) | I measured k = 4 to 12 on three weeks: silhouette stays at 0.05 to 0.12, so there is no natural number to find. HDBSCAN has no Ruby library. k = threads / 12, kept between 4 and 8, avoids one-thread themes (#24) | If mixed themes (one-off threads forced into a group) start hurting reports |
 
-Smaller items are listed under "What I would do next" on each [step page](docs/README.md): MMR instead of the per-thread cap, a token-exact chunk splitter, tracking post edits, pgvector 0.8 iterative scans, and more A/B weeks.
+Smaller items are listed under "Possible next steps" on each [step page](docs/README.md): MMR instead of the per-thread cap, a token-exact chunk splitter, tracking post edits, pgvector 0.8 iterative scans, and more A/B weeks.
 
 ## What could go wrong
 

@@ -42,13 +42,13 @@ The same A–B comparison in SQL, with pgvector's cosine *distance* operator:
 SELECT a.embedding <=> b.embedding;  -- 0.63  (distance = 1 − similarity = 1 − 0.37)
 ```
 
-## What I learned
+## Key takeaways
 
 - **The ranking was right; the number was not.** I guessed 0.8 for A–B; it is 0.37. Absolute scores depend on the model (small models like MiniLM spread scores low), so you never hard-code "0.8 means relevant". You rank by distance and take the top k, and only add a cut-off after measuring on real queries.
 - **Meaning beats shared words.** C and D share almost no words ("text bigger" vs "font size") and score highest of all.
 - **Topic pulls things together, even when the intent differs.** B–E (lost progress vs network error) score fairly close just because both are about syncing. That is why each chunk gets a header: the topic is part of what gets matched.
 - **Distance vs similarity.** pgvector's `<=>` returns distance (0 = identical). Smaller is closer.
 
-## What I would do next
+## Possible next steps
 
 Nothing deferred. The ideas are written up in [concepts/embeddings-and-chunking.md](../concepts/embeddings-and-chunking.md) and [concepts/vector-databases.md](../concepts/vector-databases.md); step 4 applies them to real forum posts.

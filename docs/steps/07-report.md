@@ -36,11 +36,11 @@ A dry run on the week of 2026-11-16, with a stand-in model, showed every one of 
 
 _Live run: to do once the API key is set._
 
-## What I learned
+## Key takeaways
 
 Grounding is a design, not a sentence in the prompt. Numbered evidence makes claims traceable; quotes and SQL numbers make them checkable; a cut-off and a "not enough evidence" path remove the pressure to invent; and code, not another model, does the first round of checking. The same builder with a different evidence source is the A/B test.
 
-## What I would do next
+## Possible next steps
 
 - A judge prompt that checks whether each cited sentence is actually supported by its source (planned for the A/B step, labelled as model-judged).
 - Prompt caching for the system prompt and schema when many reports are generated in a row (the backtest).

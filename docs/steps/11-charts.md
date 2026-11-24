@@ -28,7 +28,7 @@ A `/charts` page, with no React. The server describes each figure as plain data 
 2. What does the histogram's right edge at 0.6 tell you about the retriever?
 3. Why return JSON for Plotly instead of drawing in the browser?
 
-## What I would do next
+## Possible next steps
 
 - Colour the map by theme, and let a click open the thread.
 - A time slider on the map to watch the forum move week by week.

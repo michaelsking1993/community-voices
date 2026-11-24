@@ -54,11 +54,11 @@ Off-topic queries ("chocolate cake recipe", "stock market predictions") all came
 
 **A flaky test found the same gotcha again.** `Chunk.similar_to` sometimes returned 1 result instead of 2 in the test suite. Each spec rolls back its rows, but HNSW keeps the dead entries in the index, and they used up the 40 default candidates. `Chunk.with_ef_search` now raises the limit for both the console helper and the retriever.
 
-## What I learned
+## Key takeaways
 
 Retrieval quality is not "the nearest chunks". It is nearest *and* close enough *and* not all from one place *and* in the right time window. Each of those is a knob, and the only honest way to set a knob is a small labelled test set you re-run after every change. A cut-off is what turns "always say something" into "say nothing when there is nothing to say", which is the base of a report that does not invent.
 
-## What I would do next
+## Possible next steps
 
 - Hybrid search (Postgres full-text plus vectors, merged by rank) for exact strings like "26.09.2" or error messages.
 - MMR instead of a per-thread cap, to also skip two different threads that say the same thing.
