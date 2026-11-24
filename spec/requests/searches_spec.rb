@@ -22,6 +22,18 @@ RSpec.describe "Search", type: :request do
     expect(Retrieval.last.purpose).to eq("search")
   end
 
+  it "is not limited to the report's 8 hits" do
+    10.times do |i|
+      topic = Topic.create!(discourse_id: 100 + i, title: "Sync thread #{i}", slug: "sync-#{i}", category_name: "Anki")
+      Chunking::Chunker.new.call(create_post(raw: "sync fails with a network error every time I open the app on my phone today number #{i}", topic:))
+    end
+    Embeddings::Embedder.new(model: FakeEmbeddingModel.new).call
+
+    get search_path(q: "sync fails network error phone")
+
+    expect(response.body.scan("Open on the forum").size).to be > Search::Retriever::K
+  end
+
   it "says so when nothing is close enough" do
     get search_path(q: "zebra quantum pancake")
 
