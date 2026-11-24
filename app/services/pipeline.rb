@@ -5,6 +5,10 @@ module Pipeline
   class Error < StandardError; end
 
   class Runner
+    # Structured results from the last call, where a task has any that are
+    # not already in their own tables (the retrieval eval).
+    attr_reader :data
+
     def call(kind, weeks: nil)
       case kind
       when "ingest" then ingest(weeks || 2)
@@ -38,11 +42,15 @@ module Pipeline
         by_config.each { |r| out << format("  %-18s hit=%-5s recall=%.2f threads=%d", r.config, r.hit, r.recall, r.threads) }
       end
       out << "" << "config              queries  hit rate  recall  threads in top #{Search::Retriever::K}"
-      evaluation.summarize(rows).each do |s|
+      summary = evaluation.summarize(rows)
+      summary.each do |s|
         out << format("%-18s  %7d  %8.2f  %6.2f  %7.1f", s.config, s.queries, s.hit_rate, s.recall, s.threads)
       end
       off_topic = Search::Evaluation.off_topic
-      out << "" << "Off-topic queries that correctly found nothing: #{(evaluation.off_topic_empty_rate(off_topic) * 100).round}% of #{off_topic.size}"
+      off_topic_rate = evaluation.off_topic_empty_rate(off_topic)
+      out << "" << "Off-topic queries that correctly found nothing: #{(off_topic_rate * 100).round}% of #{off_topic.size}"
+      @data = { "configs" => summary.map { _1.to_h.transform_keys(&:to_s) }, "off_topic_empty_rate" => off_topic_rate,
+                "off_topic_queries" => off_topic.size }
       Retrieval.where(purpose: "eval").delete_all # keep eval runs out of the retrieval stats
       out.join("\n")
     end

@@ -16,6 +16,6 @@
   <p class="muted">Last run: <strong><%= last.status %></strong> · started <%= l(last.created_at, format: :short) %><%= " · #{pluralize(last.weeks, "week")}" if last.weeks %></p>
   <% if last.error %><p class="notice"><%= last.error %></p><% end %>
   <% if last.summary %>
-    <details><summary>Output</summary><pre><%= last.summary %></pre></details>
+    <details><summary class="muted">Raw output (as the terminal prints it)</summary><pre><%= last.summary %></pre></details>
   <% end %>
 <% end %>

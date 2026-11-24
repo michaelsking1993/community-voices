@@ -1,0 +1,36 @@
+<% rows = comparison.rows %>
+<% weeks = comparison.weeks %>
+<h3>Results</h3>
+<p><%= ab_verdict(rows, weeks.size) %></p>
+<table class="results">
+  <thead><tr><th></th><% rows.each do |r| %><th><%= arm_name(r.arm) %></th><% end %></tr></thead>
+  <tbody>
+    <tr><th>Cost per report</th><% rows.each do |r| %><td><%= dollars(r.cost_usd) %></td><% end %></tr>
+    <tr><th>Tokens sent to the LLM</th><% rows.each do |r| %><td><%= number_with_delimiter(r.input_tokens) %></td><% end %></tr>
+    <tr><th>Seconds to write</th><% rows.each do |r| %><td><%= r.seconds %></td><% end %></tr>
+    <tr class="group"><th colspan="<%= rows.size + 1 %>">Checked in code</th></tr>
+    <tr><th>Citations that point at a real post <span class="muted">(higher is better)</span></th><% rows.each do |r| %><td><%= percent(r.citations_valid) %></td><% end %></tr>
+    <tr><th>Sentences with no citation <span class="muted">(lower is better)</span></th><% rows.each do |r| %><td><%= percent(r.sentences_uncited) %></td><% end %></tr>
+    <tr class="group"><th colspan="<%= rows.size + 1 %>">Checked by a judge model</th></tr>
+    <tr><th>Cited claims the post really supports</th><% rows.each do |r| %><td><%= percent(r.support_rate) %></td><% end %></tr>
+    <% Ab::Ranker::DIMENSIONS.each do |dim| %>
+      <tr><th><%= dim.capitalize %></th><% rows.each do |r| %><td><%= score(r.scores[dim]) %></td><% end %></tr>
+    <% end %>
+    <tr><th>Times ranked best</th><% rows.each do |r| %><td><%= r.wins %> of <%= weeks.size %></td><% end %></tr>
+  </tbody>
+</table>
+<p class="muted">Averages over <%= pluralize(weeks.size, "week") %> that have all three reports. "No context" cites nothing, so its citation checks are blank. The judge scores the three reports without knowing which is which.</p>
+
+<% ranking = Judgement.of_kind("ranking").order(:created_at).last %>
+<% if ranking %>
+  <details>
+    <summary>What the judge said about each report (week of <%= ranking.week_start %>)</summary>
+    <% rows.each do |r| %>
+      <% note = ranking.data.dig("scores", r.arm) %>
+      <% next unless note %>
+      <p><strong><%= arm_name(r.arm) %></strong> · <%= link_to "read the report", report_path(note["report_id"]) %><br>
+        <%= note["note"] %>
+        <% if note["invented"].to_i.positive? %><br><span class="muted">Claims the judge thought were invented: <%= note["invented"] %></span><% end %></p>
+    <% end %>
+  </details>
+<% end %>

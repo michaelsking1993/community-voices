@@ -1,0 +1,11 @@
+<h3>Results</h3>
+<table class="results">
+  <thead><tr><th>Setting</th><th>Questions</th><th>Found at least one right thread</th><th>Share of right threads found</th><th>Different threads in the top <%= Search::Retriever::K %></th></tr></thead>
+  <tbody>
+    <% data["configs"].each do |c| %>
+      <tr><th><%= c["config"] %></th><td><%= c["queries"] %></td><td><%= percent(c["hit_rate"]) %></td><td><%= percent(c["recall"]) %></td><td><%= c["threads"] %></td></tr>
+    <% end %>
+  </tbody>
+</table>
+<p><%= percent(data["off_topic_empty_rate"]) %> of <%= data["off_topic_queries"] %> off-topic questions correctly found nothing (the 0.6 cut-off at work).</p>
+<p class="muted">"Max 2 per thread" is what the app uses: it trades a little recall for more different threads, so one long thread cannot crowd out the rest.</p>

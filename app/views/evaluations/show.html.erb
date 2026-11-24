@@ -12,5 +12,8 @@
     <h2><%= kind.label.delete_prefix("Run ").upcase_first %></h2>
     <p><%= kind.blurb %></p>
     <%= render "shared/job_form", kind:, last: @last[kind.key], configured: @configured, full_weeks: @full_weeks %>
+    <%= render "ab_results", comparison: @ab if kind.key == "ab" && @ab %>
+    <%= render "backtest_results", summary: @backtest if kind.key == "backtest" && @backtest %>
+    <%= render "retrieval_results", data: @retrieval if kind.key == "retrieval_eval" && @retrieval %>
   </section>
 <% end %>
