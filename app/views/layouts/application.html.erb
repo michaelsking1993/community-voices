@@ -24,7 +24,7 @@
   </head>
 
   <body>
-    <nav class="muted"><%= link_to "Reports", reports_path %> · <%= link_to "Charts", charts_path %></nav>
+    <%= render "shared/tabs" %>
     <% flash.each do |_type, message| %>
       <p class="notice" role="status"><%= message %></p>
     <% end %>
