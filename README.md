@@ -128,7 +128,7 @@ Every pull request was reviewed by a fresh Claude session that hadn't written it
 
 ### What I owned
 
-I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) are my running notes; Claude drafted an entry after each step and I edited it.
+I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) has short notes Claude drafted after each step.
 
 ## Where each part of the challenge lives
 
