@@ -52,7 +52,19 @@ Run the tests with `bundle exec rspec` (add `RUN_MODEL_SPECS=1` and `--tag model
 
 ## How I built it: a learner's approach
 
-I know Rails and Postgres well. RAG and vector databases, though, I only knew as buzzwords. So I treated this challenge as a chance to actually learn them, and I set the work up so that I understood each piece before it got merged, not after. The [step pages](docs/README.md) are basically the diary of that.
+This was a fascinating project to me. In a personal project, I’ve been using RAG to compile a learner’s dictionary: 1) lemmatize a word to its base word, 2) find all existing dictionary entries (senses) for that base word in our dictionary, 3) pass the word, the context it was found in, and the existing dictionary entries to the model for it to determine whether one matches - if so, say which one, otherwise, give a 0, which prompts us to generate a fresh entry and associate it with the lemma.
+
+While that is RAG, there is no need for embeddings. Therefore, building this pipeline was very instructive to me.
+
+Here is how I did it:
+
+Step 1 was uploading the prompt into Claude, with some blabbering from me about how I wanted to build this; essentially, I told it, “this is what we need to build. However, I want us to build this as if you’re teaching a beginner. Make me explain back every concept to you as we build it, and I won’t let us move on until I’ve thoroughly understood each piece”.
+
+And that is essentially what we did. I spent more time than I would’ve liked on this project, about a day and a half, but the vast majority of that was spent digesting these concepts and explaining them back in my own words, so I wouldn’t say they were time lost.
+
+The result of the project was initially all in background jobs and rake tasks. I wanted to see things on the interface itself, so we spent some time getting things onto the interface.
+
+I’m happy with the result. I wouldn’t call myself an expert in these topics, but I was able to explain them all and therefore I’m pretty confident in being able to apply them.
 
 ### What I ended up with, in three steps
 
@@ -87,10 +99,6 @@ That miss turned into a rule for the whole project: no picking thresholds by fee
 ### Questions to check myself
 
 The later step pages end with "Check yourself" questions, like "Paste-all scored a bit higher than RAG. Why is RAG still the right design for this app?" They're there so I can explain each step, not just run it. The [concepts](docs/concepts) pages are the short explanations I wish I'd had when I started.
-
-### Understand every piece before moving on
-
-Near the end, I did one long, intensive walkthrough of the whole pipeline with the assistant, and I made sure I understood literally every piece of it before moving on. The rule was simple: we didn't move on until I could explain the current piece back in my own words, and then the assistant poked holes in my explanation until it was right. That covered what an embedding is and why 384 numbers can stand for meaning, how chunking works and why chunks overlap, how k-means places and moves its markers, what cosine distance measures and where the 0.6 cut-off comes from, why importing and reporting are separate jobs, and how citation grounding is checked in code instead of trusted to the model. The three-step summary above is the short version of what I ended up writing, and anything I couldn't explain yet became a question that fed the [concepts](docs/concepts) pages and my [notes](docs/notes.md).
 
 ### Small, tested pull requests, and decisions in writing
 
