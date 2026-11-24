@@ -10,6 +10,11 @@ Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works 
 
 **How I built it:** I came in knowing RAG without embeddings and learned the rest by explaining every piece back before moving on. [Read how](#how-i-built-it-a-learners-approach).
 
+**Reading guide.** There is a lot of documentation here, because every build step left a page behind. You don't need to read it all:
+- **5 minutes:** this intro and [How I built it](#how-i-built-it-a-learners-approach).
+- **15 minutes:** add [step 5, retrieval](docs/steps/05-retrieval.md) and [step 10, the A/B test](docs/steps/10-ab-test.md), plus the 7 "Start here" calls at the top of [DECISIONS.md](DECISIONS.md).
+- **Everything else** ([step pages](docs/README.md), [concepts](docs/concepts), the rest of DECISIONS.md) is reference.
+
 **See a run without installing anything:** [`docs/samples/`](docs/samples) has one week's report written three ways (RAG, paste the whole week, no context) and how they compared.
 
 ## Quick start
@@ -93,6 +98,8 @@ The build was 12 steps, and every one of them went through the same five beats:
 | **Build** | One small pull request, with tests and green CI |
 | **Check** | Run it on real forum data and measure it, not just "it runs" |
 | **Document** | One page in [`docs/steps/`](docs/steps): what we built, why, how it works, what I learned, what's next |
+
+That Document beat is why there's so much documentation: it's a by-product of how I learned, one page per step written as I went. The [reading guide](#community-voices) at the top says where to start.
 
 ### Guess first, then measure
 
