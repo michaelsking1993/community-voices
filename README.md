@@ -4,11 +4,16 @@ Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works 
 
 **What is Anki?** [Anki](https://apps.ankiweb.net) is the gold-standard app for spaced-repetition flashcards: it shows you each card just before you would forget it. Medical students, serious language learners and many others rely on it. It is open source and has a very active community, which makes its forum a rich, honest source of what users struggle with and ask for. I have used Anki heavily for the last 15 years, so it is a community I know well.
 
-**The headline result, on one week so far** (week of 2026-11-16, [details](docs/steps/10-ab-test.md)): RAG matched pasting the whole week into the prompt on coverage, accuracy and specificity. Paste-all edged it on usefulness (5 vs 4). With no posts at all, the LLM can only guess. The first RAG run missed a big thread; finding out why and fixing it is in [step 10](docs/steps/10-ab-test.md). One week judged once is a promising sign, not proof.
+**The headline result** (two weeks, three judged runs, [details](docs/steps/10-ab-test.md)): pasting the whole week into the prompt wrote the best report every time, and RAG came a close second each time, near it on coverage and specificity and a little behind on accuracy. With no posts at all, the LLM can only guess. The first RAG run missed a big thread; finding out why, fixing it, and then checking the fix on a week it was never tuned on is in [step 10](docs/steps/10-ab-test.md). The judge is noisy (the same week re-run moved RAG's scores by 1 to 2 points), so the steady signal is the ranking, not single scores.
 
-**Why RAG anyway: scale.** A week of this forum still fits in a prompt, so pasting it all is a strong baseline today. But pasting grows with the data (12 weeks would be about 750,000 tokens, past any context window), while retrieval grows with the question: the RAG prompt stays at about 17,000 tokens however much history is stored. It is also about a third of the cost ($0.12 vs $0.35 per report), but that is a bonus, not the reason.
+**Why RAG anyway: scale.** A week of this forum still fits in a prompt, so pasting it all is a strong baseline today. But pasting grows with the data (12 weeks would be about 750,000 tokens, past any context window), while retrieval grows with the question: the RAG prompt stays at about 17,000 tokens however much history is stored. It is also a third to a half of the cost ($0.12 to $0.19 vs $0.35 to $0.40 per report), but that is a bonus, not the reason.
 
 **How I built it:** I came in knowing RAG without embeddings and learned the rest by explaining every piece back before moving on. [Read how](#how-i-built-it-a-learners-approach).
+
+**Reading guide.** There is a lot of documentation here, because every build step left a page behind. You don't need to read it all:
+- **5 minutes:** this intro and [How I built it](#how-i-built-it-a-learners-approach).
+- **15 minutes:** add [step 5, retrieval](docs/steps/05-retrieval.md) and [step 10, the A/B test](docs/steps/10-ab-test.md), plus the 7 "Start here" calls at the top of [DECISIONS.md](DECISIONS.md).
+- **Everything else** ([step pages](docs/README.md), [concepts](docs/concepts), the rest of DECISIONS.md) is reference.
 
 **See a run without installing anything:** [`docs/samples/`](docs/samples) has one week's report written three ways (RAG, paste the whole week, no context) and how they compared.
 
@@ -76,7 +81,7 @@ I’m happy with the result. I wouldn’t call myself an expert in these topics,
 2. **Report.** Group the week's threads into 4 to 8 themes (k-means), have the LLM name each one, then use each theme's name and summary as a search query to pull the closest chunks from that week. Those chunks become numbered evidence ([E1], [E2] ...), and one LLM call writes the report and the predictions, citing the evidence for every claim. Plain Ruby then checks that every citation is real and every quote is word for word.
 3. **Evaluate.** An A/B test writes the same report three ways (paste the whole week, RAG, no context) and grades them with code checks, a support judge and a blind ranker that's a different model. A backtest goes back to old reports and checks whether their predictions came true.
 
-Paste-all came out sliiiiiightly better. At $0.35 a report against $0.12, the cost gap alone isn't a big deal. The real problem is that pasting stops working once the data no longer fits in a prompt: 12 weeks of posts is about 750,000 tokens. RAG keeps the prompt the same size however much history there is, and that's why it's the right design here. The diagrams and the reasoning behind each piece are [further down](#shape-of-the-system-and-why).
+Paste-all came out sliiiiiightly better, every time. At about $0.40 a report against $0.20, the cost gap alone isn't a big deal. The real problem is that pasting stops working once the data no longer fits in a prompt: 12 weeks of posts is about 750,000 tokens. RAG keeps the prompt the same size however much history there is, and that's why it's the right design here. The diagrams and the reasoning behind each piece are [further down](#shape-of-the-system-and-why).
 
 ### Plan before code
 
@@ -93,6 +98,8 @@ The build was 12 steps, and every one of them went through the same five beats:
 | **Build** | One small pull request, with tests and green CI |
 | **Check** | Run it on real forum data and measure it, not just "it runs" |
 | **Document** | One page in [`docs/steps/`](docs/steps): what we built, why, how it works, what I learned, what's next |
+
+That Document beat is why there's so much documentation: it's a by-product of how I learned, one page per step written as I went. The [reading guide](#community-voices) at the top says where to start.
 
 ### Guess first, then measure
 
@@ -114,7 +121,7 @@ Every pull request was reviewed by a fresh Claude session that hadn't written it
 
 - **The A/B test was unfair to the rival.** The paste-all arm was pasting overlapping chunks, which inflated its cost by about 40%, and it was being handed our themes, which leaked the RAG pipeline into it. I rebuilt it as "each post once, no themes" and re-ran it (#49). RAG's cost advantage shrank from 3.1 times to 2.7 times, and the write-up says so.
 - **The judge was grading its own homework.** The judges defaulted to the same model that wrote the reports. `LLM_JUDGE_MODEL` now lets a different model judge, and the published run uses one (#44, #50).
-- **RAG missed the week's second-biggest thread.** The blind judge caught it. The thread was in the right theme, but every theme got 6 chunks no matter how big it was, and a query built from a theme's centre can't see a big thread sitting at its edge. Splitting the budget by theme size and always including each theme's busiest threads took the coverage score from 3 to 5, basically level with paste-all at about a third of the cost (#53). [Step 10](docs/steps/10-ab-test.md) keeps both runs side by side.
+- **RAG missed the week's second-biggest thread.** The blind judge caught it. The thread was in the right theme, but every theme got 6 chunks no matter how big it was, and a query built from a theme's centre can't see a big thread sitting at its edge. Splitting the budget by theme size and always including each theme's busiest threads took the coverage score from 3 to 5 (#53). But I'd tuned that on the same week, so I re-ran it on a week it had never seen: coverage 4, still second to paste-all. Better, not solved. [Step 10](docs/steps/10-ab-test.md) keeps all the runs side by side.
 - **My own answer key was wrong.** One retrieval eval query "failed" because the retriever found a relevant thread I hadn't labelled. Hand labels are a starting point, not the truth.
 - **Real data broke my assumptions.** Forum post ids are only roughly in date order, so the first crawler stopped too early. And a half-crawled oldest week made activity look like it was rising. Both have specs now.
 
@@ -358,9 +365,9 @@ Smaller items are listed under "What I would do next" on each [step page](docs/R
 
 | Risk | Seen? | What is in place | What is left |
 |---|---|---|---|
-| **Retrieval misses a big thread.** No theme's query lands near it, so the model never sees it | Yes: the first A/B run missed the week's second-biggest thread, which paste-all covered ([step 10](docs/steps/10-ab-test.md)) | A chunk budget shared by theme size, and each theme's 2 busiest threads always included (#53). On the rerun the judge's coverage score went from 3 to 5 | Checked on one week only. A big thread whose theme the search finds nothing for can still be missed. (Themes 7 and 8 went unreported until #55) |
+| **Retrieval misses a big thread.** No theme's query lands near it, so the model never sees it | Yes: the first A/B run missed the week's second-biggest thread, which paste-all covered ([step 10](docs/steps/10-ab-test.md)) | A chunk budget shared by theme size, and each theme's 2 busiest threads always included (#53). On the rerun the judge's coverage score went from 3 to 5; on a fresh week it was 4 | On the fresh week RAG still underweighted some big threads (Browse, search and image regressions). A big thread whose theme the search finds nothing for can still be missed. (Themes 7 and 8 went unreported until #55) |
 | **The model invents details** | The blind judge counts several "invented" specifics in both grounded reports; for RAG some are trend counts and earlier-week references its facts cannot confirm either way | Cite-or-omit, code checks on every citation and quote, SQL-only numbers, no call without evidence, a support judge | Specifics in prose can still slip through; the support judge is a model too |
-| **The judge is biased or noisy** | One week, one judge, one shuffled order | A different judge model (`LLM_JUDGE_MODEL`), reports shuffled and stripped of citation ids | More weeks, each ranked in two orders |
+| **The judge is biased or noisy** | Yes: the same week re-run from scratch moved RAG from 5 / 4 / 5 / 4 to 4 / 2 / 4 / 3 ([step 10](docs/steps/10-ab-test.md)); the ranking stayed the same | A different judge model (`LLM_JUDGE_MODEL`), reports shuffled and stripped of citation ids | More weeks, each ranked in two orders |
 | **Themes are mixed** | Yes: k-means puts every thread in some group, so one-off threads join the nearest theme | Only themes with 2 or more threads are written up; the LLM sees titles and excerpts when naming | Threshold or density clustering (deferred above) |
 | **Confidence means little** | High-confidence predictions scored 0.25 against 0.50 for low, on only 2 scored high ones | The backtest measures it ([step 9](docs/steps/09-backtest.md)) | Score more weeks; tell the model how often each level has been right |
 | **A report peeks at the future** | Not seen | Every query is bounded by the report's week; a spec plants a future post and checks it never reaches the prompt | Posts edited or threads renamed after the fact can still leak a little |

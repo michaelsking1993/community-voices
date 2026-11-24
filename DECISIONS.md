@@ -2,6 +2,16 @@
 
 One row per call: the question, the options, the trade-off, and what we chose. Newest at the bottom.
 
+**Start here.** These 7 calls shape everything else:
+
+- #2 Vectors live in Postgres (pgvector), not a dedicated vector database
+- #19 The 0.6 distance cut-off, so "not enough evidence" is possible
+- #24 k-means over threads, and how many themes
+- #28 Retrieve per theme, not one search for the whole week
+- #29 Keep the report honest: cite or omit, checked in code
+- #49 Make paste-all a fair rival: each post once, no themes
+- #53 Share the chunk budget by theme size, and always include each theme's busiest threads
+
 | # | Date | Question | Options | Trade-off | Choice |
 |---|---|---|---|---|---|
 | 1 | 2026-11-23 | Which community? | Anki forums, a subreddit, Hacker News | Anki's Discourse has a public JSON API, steady volume (~60 topics, ~370 posts a week), and clear categories. Reddit's API is gated; HN is too broad for "themes". | Anki forums |
