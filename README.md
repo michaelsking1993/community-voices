@@ -85,7 +85,7 @@ The rest of this README is laid out like a system-design answer: the problem, th
 
 ## Questions I asked, and the assumptions I made
 
-Every call is in [`DECISIONS.md`](DECISIONS.md) (52 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
+Every call is in [`DECISIONS.md`](DECISIONS.md) (54 rows: the question, the options, the trade-off, the choice). The assumptions that shape everything else:
 
 - **"A week" is Monday to Monday** (#27), so "last week" and "next week" are unambiguous, and partly crawled weeks are left out of counts and trends (#51).
 - **The community is its public posts.** Private messages and staff-only posts are not in the public API, so our post counts are lower than the forum's own (topic counts match within 2; [step 3](docs/steps/03-ingest.md)).
@@ -99,7 +99,7 @@ Every call is in [`DECISIONS.md`](DECISIONS.md) (52 rows: the question, the opti
 |---|---|
 | `topics` | One row per forum thread: title, slug, category ("Anki › FSRS") |
 | `posts` | One row per forum post: author, raw text, date. Keyed on the forum's own id |
-| `chunks` | Up to 150 words of one post, with a topic/category/date header, a content hash, and a 384-number embedding (HNSW index) |
+| `chunks` | Up to 150 words of one post, with a topic/category/date header, a content hash, a 384-number embedding (HNSW index), and the name of the model that made it |
 | `themes`, `theme_topics` | A week's themes: a label, summary and kind written by the LLM, counts from SQL, and the threads in each |
 | `reports` | A generated report: the model's structured answer, the numbered evidence it cited, the citation and quote checks, tokens and cost. Outputs only, never searched |
 | `judgements` | What a judge concluded about a report: prediction scores (backtest), support checks and blind rankings (A/B) |
@@ -165,6 +165,7 @@ Smaller items are listed under "What I would do next" on each [step page](docs/R
 | **A report peeks at the future** | Not seen | Every query is bounded by the report's week; a spec plants a future post and checks it never reaches the prompt | Posts edited or threads renamed after the fact can still leak a little |
 | **The forum is slow, down or changes** | Not in a live run; guarded anyway | Retries on 429, 5xx and timeouts; the app starts with stored data if the crawl fails (#52) | A change to the API's shape would only show on a live run, since specs use fixtures |
 | **A filtered vector search comes back short** | Yes: a flaky spec and a short 1-week window ([step 5](docs/steps/05-retrieval.md)) | `hnsw.ef_search` raised to 200 for every search | pgvector 0.8 iterative scans |
+| **The embedding model is switched** | Not seen; found while reviewing | Every chunk is stamped with its model; the Embedder re-embeds other models' chunks, the Retriever compares only same-model vectors, and a length check runs before any work (#54) | Themes and the map can mix models until the next embed run |
 | **Growth** | 12 weeks is about 3,400 chunks and about 15 minutes to embed on CPU the first time | Incremental embedding (content hash), retrieval keeps the prompt small | A hosted or GPU embedder for a much larger forum |
 
 ## How I built it: a learner's approach
