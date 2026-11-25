@@ -40,7 +40,7 @@ Things he pushed back on, corrected, or rejected. Each changed the repo.
 - **The skipped step 2.** The plan had folded the "concepts lab" into reading docs. He noticed he hadn't actually done it, so the session ran it live: he guessed similarities for six sentences, then the real model scored them. He got the ranking right and the number wrong (guessed 0.8, measured 0.37), which became the project's "no thresholds by feel" rule.
 - **Honesty edits.** He removed wording that oversold him or put words in his mouth:
   - "pgvector is not a new database…" in a step page ("makes me look like a noob").
-  - "What I learned" headings on step pages he hadn't written ("disingenuous… I didn't read those"), renamed to "Key takeaways". His own write-up became the centrepiece instead.
+  - "What I learned" headings on step pages Claude had drafted in his voice, renamed to "Key takeaways". His own write-up became the centrepiece instead.
   - A requirement "a reviewer can run it from git clone" that he called common sense, replaced with the one that's actually distinctive (no API key needed to explore).
   - A line in the Anki paragraph telling TE what they'd "want to hear".
   - A Flashcards line claiming he drilled with it; it now says it's a toy and he'd use Anki for real memorising.
@@ -68,7 +68,7 @@ Writing this page also caught one overclaim in the README: it said every pull re
 
 - **Most of the important fixes came from asking "why?"** about a number: why 8 themes, why 6 sections, why 8 search results, why 150 words, why 0.6. Several of those numbers turned out to be untested defaults.
 - **Fresh eyes found the methodology problems; real data found the code problems.** The unfair A/B, the self-grading judge and tuning on the test week were all caught by a session that hadn't written the code. Crawler ordering, partial weeks and the missed thread were caught by running on real forum data.
-- **Docs written alongside the code are cheap but don't count as understanding.** Every step got a docs page, but Michael's understanding came from explaining the pipeline back, not from reading those pages. The README now says so.
+- **Docs written alongside the code are cheap; explaining it back is what builds understanding.** Every step got a docs page, but the real learning came from Michael explaining the pipeline back in his own words. The README now says so.
 - **Cost shaped the process.** Paid reruns were asked about before running, model and effort were chosen per session, and the review was scheduled around the usage limit.
 
 ## What to do differently next time
