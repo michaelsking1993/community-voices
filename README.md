@@ -47,7 +47,7 @@ Everything runs from the tabs at the top. A line under them always says how much
 
 - **Community report:** write a week's report and read past ones.
 - **Data:** what is stored, and "Crawl the forum" to fetch more.
-- **Search:** a semantic search box over the stored posts (no LLM key needed).
+- **Search:** a semantic search box over the stored posts (no LLM key needed). This is retrieval only, the "R" in RAG: your query is turned into a vector by the same local model that embedded the posts, then one SQL query ranks the stored vectors by distance and shows the closest threads. No LLM writes anything. Only the weekly report is full RAG: its retrieved threads go into the prompt, and the LLM writes the report and cites them.
 - **Evaluate:** buttons for the A/B test, the backtest and the retrieval eval, each with its cost and the data it needs.
 - **Charts:** the results of those, plus a map of every thread by meaning and which posts get retrieved most.
 - **Flashcards:** a fun extra: the 28 terms that were new to me while building this, as a little flip deck. A toy, not a real study tool. (For real memorising I'd use Anki.)
