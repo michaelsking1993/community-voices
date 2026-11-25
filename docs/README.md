@@ -35,4 +35,5 @@ Read in this order. Each page is about one screen.
 
 - [DECISIONS.md](../DECISIONS.md): every call, its options and trade-off
 - [my-explanation.md](my-explanation.md): the whole pipeline in my own words, written once I understood every piece
+- [workflow-insights.md](workflow-insights.md): how the build actually went, written from every Claude session: organisation, pushback, and where the AI got things wrong
 - [notes.md](notes.md): running notes for the README and interview

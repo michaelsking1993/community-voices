@@ -13,7 +13,7 @@ Every week, this app reads the [Anki forums](https://forums.ankiweb.net), works 
 **Reading guide.** There is a lot of documentation here, written alongside each build step. None of it is required reading:
 - **5 minutes:** this intro and [How I built it](#how-i-built-it-a-learners-approach).
 - **15 minutes:** add [step 5, retrieval](docs/steps/05-retrieval.md) and [step 10, the A/B test](docs/steps/10-ab-test.md), plus the 7 "Start here" calls at the top of [DECISIONS.md](DECISIONS.md).
-- **Optional:** [the pipeline in my own words](docs/my-explanation.md), the write-up I did once I understood every piece.
+- **Optional:** [the pipeline in my own words](docs/my-explanation.md), the write-up I did once I understood every piece, and [workflow insights](docs/workflow-insights.md), how the build actually went, taken from every Claude session.
 - **Everything else** ([step pages](docs/README.md), [concepts](docs/concepts), the rest of DECISIONS.md) is reference, there if you want to dig into one part.
 
 **See a run without installing anything:** [`docs/samples/`](docs/samples) has one week's report written three ways (RAG, paste the whole week, no context) and how they compared.
@@ -131,7 +131,7 @@ The work landed as about 30 small pull requests, each one reviewed and merged be
 
 ### Reviews and real data caught real problems
 
-Every pull request was reviewed by a fresh Claude session that hadn't written it, and then by me: tests first, code second. Here's some of what that, plus running on real data, caught:
+Fresh Claude sessions that hadn't written the code reviewed it at three points (the A/B, backtest and charts right after they landed, the whole codebase before submission, and the finished repo), and I reviewed each pull request: tests first, code second. Here's some of what that, plus running on real data, caught:
 
 - **The A/B test was unfair to the rival.** The paste-all arm was pasting overlapping chunks, which inflated its cost by about 40%, and it was being handed our themes, which leaked the RAG pipeline into it. I rebuilt it as "each post once, no themes" and re-ran it (#49). RAG's cost advantage shrank from 3.1 times to 2.7 times, and the write-up says so.
 - **The judge was grading its own homework.** The judges defaulted to the same model that wrote the reports. `LLM_JUDGE_MODEL` now lets a different model judge, and the published run uses one (#44, #50).
@@ -142,6 +142,10 @@ Every pull request was reviewed by a fresh Claude session that hadn't written it
 ### What I owned
 
 I owned the decisions: the plan, every row in DECISIONS.md, and every merge, after reading the specs and the diff. [`docs/notes.md`](docs/notes.md) has short notes Claude drafted after each step.
+
+### Workflow insights
+
+`/insights` couldn't see this project, because it was built in short-lived cloud sessions. Instead, Claude read all of them afterwards and wrote up how the work was organised, where I pushed back, and where the AI got things wrong and how each was caught: [docs/workflow-insights.md](docs/workflow-insights.md).
 
 ## Where each part of the challenge lives
 
@@ -154,6 +158,7 @@ I owned the decisions: the plan, every row in DECISIONS.md, and every merge, aft
 | Stats on which embeddings are retrieved most | Charts page: every search is logged (`retrievals`, `retrieval_hits`). [Step 5](docs/steps/05-retrieval.md) |
 | Automated ingest, and handling too much data | A polite crawler, a weekly job (Mondays 6am), incremental chunk-and-embed. [Step 3](docs/steps/03-ingest.md) |
 | An A/B test: with and without RAG | Three arms (no context, paste the whole week, RAG), checked in code and by a blind judge: `bin/rails 'ab:run[1]'`, then the Charts page. [Step 10](docs/steps/10-ab-test.md) |
+| (optional) `/insights` or other aspects of your workflow | [Workflow insights](docs/workflow-insights.md), written from every Claude session, plus [How I built it](#how-i-built-it-a-learners-approach) |
 | (extra) Did the predictions come true? | A backtest against the week that followed: `bin/rails 'backtest:run[4]'`. [Step 9](docs/steps/09-backtest.md) |
 
 ## The problem, restated
